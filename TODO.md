@@ -1,0 +1,4 @@
+- [x] Modify resources/views/participant/dashboard.blade.php to add a sidebar with navigation links (Dashboard, Submissions, Competitions, Profile)
+- [x] Enhance the main content area with sections for viewing submissions and competition details
+- [x] Use a flex layout to position the sidebar on the left and main content on the right
+- [x] Add placeholder content for submissions and competitions since backend logic may not be implemented yet

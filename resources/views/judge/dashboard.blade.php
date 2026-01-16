@@ -1,0 +1,78 @@
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Judge Dashboard') }}
+        </h2>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="flex">
+                <!-- Sidebar -->
+                <div class="w-64 bg-white shadow-sm sm:rounded-lg mr-6">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold mb-4">Navigation</h3>
+                        <ul class="space-y-2">
+                            <li>
+                                <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 {{ request()->routeIs('dashboard') ? 'bg-blue-500 text-white' : '' }}">
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="block px-4 py-2 text-gray-700 rounded hover:bg-gray-300">
+                                    Assigned Competitions
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="block px-4 py-2 text-gray-700 rounded hover:bg-gray-300">
+                                    Submissions to Review
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-gray-700 rounded hover:bg-gray-300">
+                                    Profile
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="flex-1 bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-gray-900">
+                        <h1 class="text-2xl font-bold mb-4">Welcome to the Judge Dashboard!</h1>
+                        <p>You are a judge. Review submissions and manage assigned competitions.</p>
+                        @if(session('success'))
+                            <div class="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+
+                        <!-- Assigned Competitions Section -->
+                        <div class="mt-8">
+                            <h2 class="text-xl font-semibold mb-4">Assigned Competitions</h2>
+                            <div class="bg-gray-50 p-4 rounded">
+                                <p class="text-gray-600">No assigned competitions yet.</p>
+                                <!-- Placeholder for competitions list -->
+                            </div>
+                        </div>
+
+                        <!-- Submissions to Review Section -->
+                        <div class="mt-8">
+                            <h2 class="text-xl font-semibold mb-4">Submissions to Review</h2>
+                            <div class="bg-gray-50 p-4 rounded">
+                                <p class="text-gray-600">No submissions to review at the moment.</p>
+                                <!-- Placeholder for submissions list -->
+                                {{-- @foreach($submissionsToReview as $submission)
+                                    <div class="mb-2">
+                                        <strong>{{ $submission->title }}</strong> - Submitted by: {{ $submission->user->name }}
+                                    </div>
+                                @endforeach --}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</x-app-layout>
