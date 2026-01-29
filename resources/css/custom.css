@@ -1,0 +1,76 @@
+/* Custom styles for Admin Dashboard */
+
+.admin-dashboard {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.sidebar {
+    background: #fff;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    margin-right: 20px;
+}
+
+.main-content {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    padding: 2rem;
+}
+
+.stats-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 15px;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.stats-card .card-body {
+    padding: 2rem;
+}
+
+.stats-number {
+    font-size: 3rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.welcome-section {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.welcome-section h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-section p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.nav-link {
+    border-radius: 8px;
+    margin-bottom: 5px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.nav-link.active {
+    background-color: #007bff !important;
+    color: white !important;
+    box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+}
