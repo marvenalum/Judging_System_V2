@@ -8,7 +8,12 @@ use App\Models\User;
 class UserController extends Controller
 {
     public function index() {
-        $users = User::all();
+        $user = auth()->user();
+        if ($user->role === 'judge') {
+            $users = User::where('role', 'participant')->get();
+        } else {
+            $users = User::all();
+        }
         return view('admin.users', compact('users'));
     }
 
@@ -55,12 +60,18 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+        $authUser = auth()->user();
+        $route = $authUser->role === 'judge' ? 'judge.users.index' : 'admin.users.index';
+
+        return redirect()->route($route)->with('success', 'User updated successfully.');
     }
 
     public function destroy(User $user) {
         $user->delete();
 
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
+        $authUser = auth()->user();
+        $route = $authUser->role === 'judge' ? 'judge.users.index' : 'admin.users.index';
+
+        return redirect()->route($route)->with('success', 'User deleted successfully.');
     }
 }

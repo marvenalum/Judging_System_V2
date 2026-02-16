@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1ed73e62f6a200a53e64fb808861e4ea",
+    "content-hash": "bf4f222314a31782f6f9f3418d1d3e19",
     "packages": [
         {
             "name": "brick/math",
@@ -3435,7 +3435,7 @@
                     "homepage": "https://symfony.com/contributors"
                 }
             ],
-            "description": "Eases the creation of beautiful and testable command line interfaces",
+            "description": "Eases the on of beautiful and testable command line interfaces",
             "homepage": "https://symfony.com",
             "keywords": [
                 "cli",

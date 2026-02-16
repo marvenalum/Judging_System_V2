@@ -46,4 +46,28 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the scores received by this user as a participant.
+     */
+    public function receivedScores()
+    {
+        return $this->hasMany(Score::class, 'participant_id');
+    }
+
+    /**
+     * Get the judge event assignments for this user.
+     */
+    public function judgeAssignments()
+    {
+        return $this->hasMany(\App\Models\JudgeEventAssignment::class, 'judge_id');
+    }
+
+    /**
+     * Get the submissions for this user as a participant.
+     */
+    public function submissions()
+    {
+        return $this->hasMany(\App\Models\Submission::class, 'participant_id');
+    }
 }

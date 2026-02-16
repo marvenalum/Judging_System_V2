@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\JudgeController;
+use App\Http\Controllers\CriteriaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,7 +24,7 @@ Route::get('/dashboard', function () {
     if ($user->role === 'admin') {
         return view('admin.dashboard');
     } elseif ($user->role === 'judge') {
-        return view('judge.dashboard');
+        return redirect()->route('judge.dashboard');
     } else {
         return view('participant.dashboard', ['submissions' => [], 'competitions' => []]);
     }
@@ -82,6 +83,20 @@ Route::prefix('admin')->middleware(['auth', 'verified', 'role:admin'])->group(fu
             'users' => 'user',
         ],
     ]);
+    Route::resource('criteria', CriteriaController::class, [
+        'names' => [
+            'index' => 'admin.criteria.index',
+            'create' => 'admin.criteria.create',
+            'store' => 'admin.criteria.store',
+            'show' => 'admin.criteria.show',
+            'edit' => 'admin.criteria.edit',
+            'update' => 'admin.criteria.update',
+            'destroy' => 'admin.criteria.destroy',
+        ],
+        'parameters' => [
+            'criteria' => 'criterion',
+        ],
+    ]);
 });
 
 // Participant Dashboard Routes
@@ -92,6 +107,72 @@ Route::prefix('participant')->middleware(['auth', 'verified', 'role:participant'
 // Judge Dashboard Routes
 Route::prefix('judge')->middleware(['auth', 'verified', 'role:judge'])->group(function () {
     Route::get('/dashboard', [JudgeController::class, 'dashboard'])->name('judge.dashboard');
+    Route::get('/assigned-events', [JudgeController::class, 'assignedEvents'])->name('judge.assigned-events');
+    Route::get('/my-events', [JudgeController::class, 'myEvents'])->name('judge.my-events');
+    Route::get('/participants', [JudgeController::class, 'participants'])->name('judge.participants');
+    Route::get('/manage-participants', [JudgeController::class, 'manageParticipants'])->name('judge.manage_participants.index');
+    Route::get('/review-scores', [JudgeController::class, 'reviewScores'])->name('judge.review-scores');
+    Route::get('/scoring', [JudgeController::class, 'reviewScores'])->name('judge.scoring.index');
+    Route::get('/scoring/edit/{scoreId}', [JudgeController::class, 'scoringEdit'])->name('judge.scoring.edit');
+    Route::put('/scoring/update/{scoreId}', [JudgeController::class, 'scoringUpdate'])->name('judge.scoring.update');
+    Route::get('/profile', [JudgeController::class, 'profile'])->name('judge.profile');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('judge.profile.edit');
+    Route::resource('events', AdminController::class, [
+        'names' => [
+            'index' => 'judge.event.index',
+            'create' => 'judge.event.create',
+            'store' => 'judge.event.store',
+            'show' => 'judge.event.show',
+            'edit' => 'judge.event.edit',
+            'update' => 'judge.event.update',
+            'destroy' => 'judge.event.destroy',
+        ],
+        'parameters' => [
+            'events' => 'event',
+        ],
+    ]);
+    Route::resource('categories', CategoryController::class, [
+        'names' => [
+            'index' => 'judge.category.index',
+            'create' => 'judge.category.create',
+            'store' => 'judge.category.store',
+            'show' => 'judge.category.show',
+            'edit' => 'judge.category.edit',
+            'update' => 'judge.category.update',
+            'destroy' => 'judge.category.destroy',
+        ],
+        'parameters' => [
+            'categories' => 'category',
+        ],
+    ]);
+    Route::resource('criteria', CriteriaController::class, [
+        'names' => [
+            'index' => 'judge.criteria.index',
+            'create' => 'judge.criteria.create',
+            'store' => 'judge.criteria.store',
+            'show' => 'judge.criteria.show',
+            'edit' => 'judge.criteria.edit',
+            'update' => 'judge.criteria.update',
+            'destroy' => 'judge.criteria.destroy',
+        ],
+        'parameters' => [
+            'criteria' => 'criterion',
+        ],
+    ]);
+    Route::resource('users', UserController::class, [
+        'names' => [
+            'index' => 'judge.users.index',
+            'create' => 'judge.users.create',
+            'store' => 'judge.users.store',
+            'show' => 'judge.users.show',
+            'edit' => 'judge.users.edit',
+            'update' => 'judge.users.update',
+            'destroy' => 'judge.users.destroy',
+        ],
+        'parameters' => [
+            'users' => 'user',
+        ],
+    ]);
 });
 
 require __DIR__.'/auth.php';

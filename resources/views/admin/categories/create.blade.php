@@ -37,6 +37,7 @@
                             <x-input-label for="event_id" :value="__('Event')" />
                             <select id="event_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" name="event_id" required>
                                 <option value="">Select Event</option>
+                                
                                 @foreach(\App\Models\Event::all() as $event)
                                     <option value="{{ $event->id }}" {{ old('event_id') == $event->id ? 'selected' : '' }}>{{ $event->event_name }}</option>
                                 @endforeach

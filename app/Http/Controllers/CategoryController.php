@@ -9,7 +9,10 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::all();
+        $categories = Category::with('event')->get();
+        if (request()->routeIs('judge.category.*')) {
+            return view('judge.category.index', compact('categories'));
+        }
         return view('admin.categories.index', compact('categories'));
     }
 

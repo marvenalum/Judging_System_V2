@@ -23,8 +23,13 @@ class AdminController extends Controller
 
 
     public function index() {
-        $events = Event::all();
-        return view('admin.events', compact('events'));
+        if (auth()->user()->role === 'judge') {
+            $events = auth()->user()->judgeAssignments()->with('event')->get()->pluck('event');
+            return view('judge.events.index', compact('events'));
+        } else {
+            $events = Event::all();
+            return view('admin.events', compact('events'));
+        }
     }
 
     public function show(Event $event) {
