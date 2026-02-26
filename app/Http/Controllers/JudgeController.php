@@ -103,7 +103,7 @@ class JudgeController extends Controller
         return view('judge.manage_participants.index', compact('participants', 'eventId'));
     }
 
-    public function reviewScores(Request $request) {
+public function reviewScores(Request $request) {
         $query = Score::with(['participant', 'event', 'criteria'])
             ->where('judge_id', Auth::id());
 
@@ -113,7 +113,15 @@ class JudgeController extends Controller
 
         $scores = $query->paginate(15);
 
-        return view('judge.review-scores', compact('scores'));
+        // Get available criteria for scoring (events assigned to this judge)
+        $assignedEventIds = Auth::user()->judgeAssignments()->pluck('event_id');
+        
+        $availableCriteria = \App\Models\Criteria::with(['event', 'category'])
+            ->whereIn('event_id', $assignedEventIds)
+            ->where('status', 'active')
+            ->get();
+
+        return view('judge.review-scores', compact('scores', 'availableCriteria'));
     }
 
     public function scoringEdit($scoreId = null) {

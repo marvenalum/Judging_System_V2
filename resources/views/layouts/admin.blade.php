@@ -121,7 +121,7 @@
                 align-items: center;
                 gap: 0.875rem;
                 padding: 0.875rem 0.75rem;
-                color: rgba(0, 0, 0, 0.8);
+                color: rgba(255, 247, 247, 0.966);
                 text-decoration: none;
                 border-radius: 12px;
                 margin-bottom: 0.375rem;

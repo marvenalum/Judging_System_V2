@@ -455,7 +455,7 @@
         <aside class="participant-sidebar" id="participantSidebar">
             <div class="sidebar-logo">
                 <h2>{{ config('app.name', 'participant') }}</h2>
-                <p>Control Panel9867546</p>
+               
             </div>
 
             <nav class="sidebar-nav">
@@ -465,26 +465,13 @@
                     <span>Dashboard</span>
                 </a>
 
-                <div class="nav-section-title">Management</div>
-                <a href="{{ route('participant.users.index') }}" class="sidebar-nav-link {{ request()->routeIs('participant.users.*') ? 'active' : '' }}">
-                    <i class="bi bi-people-fill"></i>
-                    <span>Users</span>
-                </a>
+             
 
                 <a href="{{ route('participant.event.index') }}" class="sidebar-nav-link {{ request()->routeIs('participant.event.*') ? 'active' : '' }}">
                     <i class="bi bi-calendar-event-fill"></i>
                     <span>Events</span>
                 </a>
 
-                <a href="{{ route('participant.category.index') }}" class="sidebar-nav-link {{ request()->routeIs('participant.category.*') ? 'active' : '' }}">
-                    <i class="bi bi-tag-fill"></i>
-                    <span>Categories</span>
-                </a>
-
-                <a href="{{ route('participant.criteria.index') }}" class="sidebar-nav-link {{ request()->routeIs('participant.criteria.*') ? 'active' : '' }}">
-                    <i class="bi bi-list-check"></i>
-                    <span>Criteria</span>
-                </a>
 
                 <div class="nav-section-title">Settings</div>
                 <a href="{{ route('profile.edit') }}" class="sidebar-nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
@@ -539,7 +526,7 @@
                         </div>
                         <div class="user-info">
                             <div class="user-name">{{ Auth::user()->name }}</div>
-                            <div class="user-role">participantistrator</div>
+                            <div class="user-role">participant</div>
                         </div>
                         <i class="bi bi-chevron-down" style="color: var(--text-secondary); font-size: 0.875rem;"></i>
                     </div>

@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\User;
 use App\Models\Score;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CriteriaController extends Controller
 {
@@ -19,20 +20,13 @@ class CriteriaController extends Controller
         // Check if accessed via judge routes
         if (request()->routeIs('judge.criteria.index')) {
             // Verify user is authenticated
-            if (!auth()->check()) {
+            if (!Auth::check()) {
                 return redirect()->route('login')->with('error', 'Please login to access this page.');
             }
             
-            // For judges, show only criteria for events they are assigned to
-            $assignedEventIds = auth()->user()->judgeAssignments()->pluck('event_id');
-            
-            // Check if user has any event assignments
-            if ($assignedEventIds->isEmpty()) {
-                return view('judge.criteria.index', compact('assignedEventIds'))->with('message', 'You have not been assigned to any events yet.');
-            }
-            
+            // For judges, show ALL active criteria regardless of event assignment
+            // This ensures criteria created by admin displays on judge side
             $criteria = Criteria::with('event', 'category')
-                ->whereIn('event_id', $assignedEventIds)
                 ->where('status', 'active') // Only show active criteria
                 ->get();
             return view('judge.criteria.index', compact('criteria'));
@@ -63,12 +57,12 @@ class CriteriaController extends Controller
     public function createScore(Criteria $criteria)
     {
         // Verify user is authenticated
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Please login to access this page.');
         }
         
         // Verify judge is assigned to this event
-        $isAssignedToEvent = auth()->user()->judgeAssignments()
+        $isAssignedToEvent = Auth::user()->judgeAssignments()
             ->where('event_id', $criteria->event_id)
             ->exists();
             
@@ -102,12 +96,12 @@ class CriteriaController extends Controller
     public function storeScore(Request $request, Criteria $criteria)
     {
         // Verify user is authenticated
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Please login to access this page.');
         }
         
         // Verify judge is assigned to this event
-        $isAssignedToEvent = auth()->user()->judgeAssignments()
+        $isAssignedToEvent = Auth::user()->judgeAssignments()
             ->where('event_id', $criteria->event_id)
             ->exists();
             
@@ -130,7 +124,7 @@ class CriteriaController extends Controller
         ]);
 
         // Check if score already exists for this judge, participant, and criteria
-        $existingScore = Score::where('judge_id', auth()->id())
+        $existingScore = Score::where('judge_id', Auth::id())
             ->where('participant_id', $request->participant_id)
             ->where('criteria_id', $criteria->id)
             ->first();
@@ -146,7 +140,7 @@ class CriteriaController extends Controller
         } else {
             // Create new score
             Score::create([
-                'judge_id' => auth()->id(),
+                'judge_id' => Auth::id(),
                 'participant_id' => $request->participant_id,
                 'event_id' => $criteria->event_id,
                 'criteria_id' => $criteria->id,

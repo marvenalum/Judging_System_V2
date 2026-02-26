@@ -1,35 +1,20 @@
-# Criteria CRUD Implementation TODO
+# TODO: Fix Judge Criteria Display - COMPLETED
 
-## Completed:
-- [x] Analyze current implementation
-- [x] Create plan and get user confirmation
-- [x] Update CriteriaController.php
-  - [x] Update destroy() method for soft delete
-  - [x] Add toggleStatus() method
-  - [x] Add score check before deletion
-  - [x] Add status filter to index()
+## Task: Display ALL criteria on judge side when added from admin side
 
-- [x] Add toggle route to web.php
+### Changes Made:
 
-- [x] Update resources/views/admin/criteria/index.blade.php
-  - [x] Add status filter dropdown
-  - [x] Show score count in table
-  - [x] Add warning if scores exist
-  - [x] Update actions (toggle instead of delete)
+1. [x] Updated `app/Http/Controllers/CriteriaController.php`
+   - [x] Removed event assignment filter for judge criteria
+   - [x] Now shows ALL active criteria to judges regardless of event assignment
 
-- [x] Update resources/views/admin/criteria/create.blade.php
-  - [x] Add category_id field
-  - [x] Add max_score field
+2. [x] Updated `resources/views/judge/criteria/index.blade.php`
+   - [x] Updated description text to reflect new behavior
+   - [x] Updated empty state message to reflect new behavior
+   - [x] Removed references to `$assignedEventIds` variable
 
-- [x] Update resources/views/admin/criteria/edit.blade.php
-  - [x] Add category_id field
-  - [x] Add max_score field
+### Implementation Summary:
+Modified the judge criteria to show ALL active criteria regardless of event assignment, as per user request.
 
-## Testing:
-- [ ] Test create new criteria
-- [ ] Test view criteria
-- [ ] Test update criteria
-- [ ] Test soft delete (deactivate)
-- [ ] Test toggle status
-- [ ] Test preventing deletion when scores exist
-- [ ] Test status filter
+### Expected Outcome:
+When admin creates criteria with status 'active', it will display on the judge side for ALL judges.

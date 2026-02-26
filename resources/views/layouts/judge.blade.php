@@ -487,14 +487,9 @@
                 </a>
 
                 <div class="nav-section-title">Scoring</div>
-                <a href="{{ route('judge.scoring.index') }}" class="sidebar-nav-link {{ request()->routeIs('judge.scoring.') ? 'active' : '' }}">
+                <a href="{{ route('judge.scoring.index') }}" class="sidebar-nav-link {{ request()->routeIs('judge.scoring.*') ? 'active' : '' }}">
                     <i class="bi bi-calculator-fill"></i>
                     <span>Scoring</span>
-                </a>
-
-                <a href="{{ route('judge.review-scores') }}" class="sidebar-nav-link {{ request()->routeIs('judge.review-scores') ? 'active' : '' }}">
-                    <i class="bi bi-clipboard-data-fill"></i>
-                    <span>Review Scores</span>
                 </a>
 
                 <div class="nav-section-title">Settings</div>

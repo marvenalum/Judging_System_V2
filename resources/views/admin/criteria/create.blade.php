@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Create Criterion') }}
+            {{ __('Create Criteria') }}
         </h2>
     </x-slot>
 
@@ -13,7 +13,7 @@
                 <!-- Main Content -->
                 <div class="flex-1 bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
-                        <h1 class="text-2xl font-bold mb-4">Create New Criterion</h1>
+                        <h1 class="text-2xl font-bold mb-4">Create New Criteria</h1>
 
                         @if($errors->any())
                             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -81,7 +81,7 @@
                                     Cancel
                                 </a>
                                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                    Create Criterion
+                                    Create Criteria
                                 </button>
                             </div>
                         </form>

@@ -84,10 +84,10 @@
                                             <td class="py-2 px-4 border-b">
                                                 <a href="{{ route('admin.criteria.show', $criterion) }}" class="text-blue-600 hover:text-blue-800">View</a>
                                                 <span class="mx-1">|</span>
-                                                <a href="{{ route('admin.criteria.edit', $criterion) }}" class="text-blue-600 hover:text-blue-800">Edit</a>
+                                                <a href="{{ route('admin.criteria.edit', ['criterion' => $criterion->id]) }}" class="text-blue-600 hover:text-blue-800">Edit</a>
                                                 <span class="mx-1">|</span>
                                                 <!-- Toggle Status Button -->
-                                                <form action="{{ route('admin.criteria.toggleStatus', $criterion) }}" method="POST" style="display: inline;">
+                                                <form action="{{ route('admin.criteria.toggleStatus', ['criterion' => $criterion->id]) }}" method="POST" style="display: inline;">
                                                     @csrf
                                                     @if($criterion->status === 'active')
                                                         <button type="submit" class="text-orange-600 hover:text-orange-800" onclick="return confirm('Are you sure you want to deactivate this criterion?')">
@@ -102,7 +102,7 @@
                                                 <span class="mx-1">|</span>
                                                 <!-- Delete Button (only if no scores exist) -->
                                                 @if(!isset($scoreCounts[$criterion->id]) || $scoreCounts[$criterion->id] == 0)
-                                                    <form action="{{ route('admin.criteria.destroy', $criterion) }}" method="POST" style="display: inline;">
+                                                    <form action="{{ route('admin.criteria.destroy', ['criterion' => $criterion->id]) }}" method="POST" style="display: inline;">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="text-red-600 hover:text-red-800" onclick="return confirm('Are you sure you want to delete this criterion?')">Delete</button>

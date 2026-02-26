@@ -42,7 +42,7 @@
                             <a href="{{ route('admin.criteria.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
                                 Back to List
                             </a>
-                            <a href="{{ route('admin.criteria.edit', $criteria) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            <a href="{{ route('admin.criteria.edit', ['criterion' => $criteria->id]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                 Edit
                             </a>
                         </div>

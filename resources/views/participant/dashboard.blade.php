@@ -14,28 +14,8 @@
                         <h3 class="text-lg font-semibold mb-4">Navigation</h3>
                         <ul class="space-y-2">
                             <li>
-                                <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 {{ request()->routeIs('dashboard') ? 'bg-blue-500 text-white' : '' }}">
-                                    Dashboard
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" class="block px-4 py-2 text-gray-700 rounded hover:bg-gray-300">
-                                    Submissions
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" class="block px-4 py-2 text-gray-700 rounded hover:bg-gray-300">
-                                    Competitions
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-gray-700 rounded hover:bg-gray-300">
-                                    Profile
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+                               
+          
 
                 <!-- Main Content -->
                 <div class="flex-1 bg-white overflow-hidden shadow-sm sm:rounded-lg">
