@@ -49,6 +49,21 @@
                             </div>
 
                             <div class="mb-4">
+                                <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
+                                <select name="category_id" id="category_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                                    <option value="">Select a category</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="max_score" class="block text-sm font-medium text-gray-700">Maximum Score</label>
+                                <input type="number" name="max_score" id="max_score" value="{{ old('max_score', 100) }}" step="0.01" min="0" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                            </div>
+
+                            <div class="mb-4">
                                 <label for="percentage_weight" class="block text-sm font-medium text-gray-700">Percentage Weight</label>
                                 <input type="number" name="percentage_weight" id="percentage_weight" value="{{ old('percentage_weight') }}" step="0.01" min="0" max="100" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
                             </div>

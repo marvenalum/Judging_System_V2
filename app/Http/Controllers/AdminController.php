@@ -5,7 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\User;
+use App\Models\Submission;
+use Illuminate\Support\Facades\Auth;
 
+/**
+ * @property-read \App\Models\User $user
+ */
 class AdminController extends Controller
 {
     public function dashboard() {
@@ -23,11 +28,18 @@ class AdminController extends Controller
 
 
     public function index() {
-        if (auth()->user()->role === 'judge') {
-            $events = auth()->user()->judgeAssignments()->with('event')->get()->pluck('event');
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        
+        if ($user && $user->role === 'judge') {
+            $events = $user->judgeAssignments()
+                ->with('event')
+                ->get()
+                ->pluck('event')
+                ->filter();
             return view('judge.events.index', compact('events'));
         } else {
-            $events = Event::all();
+            $events = Event::paginate(15);
             return view('admin.events', compact('events'));
         }
     }
@@ -50,7 +62,7 @@ class AdminController extends Controller
             'event_status' => 'required|in:upcoming,ongoing,completed',
         ]);
 
-        $validated['created_by'] = auth()->id();
+        $validated['created_by'] = Auth::id();
 
         Event::create($validated);
 
@@ -80,5 +92,41 @@ class AdminController extends Controller
         $event->delete();
 
         return redirect()->route('admin.event.index')->with('success', 'Event deleted successfully.');
+    }
+
+    /**
+     * List all participant submissions that need approval.
+     */
+    public function participants(Request $request) {
+        $status = $request->get('status', 'pending');
+        
+        $submissions = Submission::with(['participant', 'event'])
+            ->when($status !== 'all', function ($query) use ($status) {
+                return $query->where('status', $status);
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('admin.participants', compact('submissions', 'status'));
+    }
+
+    /**
+     * Approve a participant submission.
+     */
+    public function approveParticipant(Submission $submission) {
+        $submission->update(['status' => 'submitted']);
+        
+        return redirect()->route('admin.participants.index')
+            ->with('success', 'Participant approved successfully.');
+    }
+
+    /**
+     * Decline a participant submission.
+     */
+    public function declineParticipant(Submission $submission) {
+        $submission->update(['status' => 'draft']);
+        
+        return redirect()->route('admin.participants.index')
+            ->with('success', 'Participant declined successfully.');
     }
 }

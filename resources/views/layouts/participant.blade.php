@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }} - Admin</title>
+        <title>{{ config('app.name', 'Laravel') }} - Participant</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -48,7 +48,7 @@
             }
 
             /* Sidebar Styles */
-            .admin-sidebar {
+            .participant-sidebar {
                 position: fixed;
                 top: 0;
                 left: 0;
@@ -62,15 +62,15 @@
                 box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
             }
 
-            .admin-sidebar::-webkit-scrollbar {
+            .participant-sidebar::-webkit-scrollbar {
                 width: 6px;
             }
 
-            .admin-sidebar::-webkit-scrollbar-track {
+            .participant-sidebar::-webkit-scrollbar-track {
                 background: rgba(255, 255, 255, 0.05);
             }
 
-            .admin-sidebar::-webkit-scrollbar-thumb {
+            .participant-sidebar::-webkit-scrollbar-thumb {
                 background: rgba(255, 255, 255, 0.2);
                 border-radius: 3px;
             }
@@ -121,7 +121,7 @@
                 align-items: center;
                 gap: 0.875rem;
                 padding: 0.875rem 0.75rem;
-                color: rgba(0, 0, 0, 0.8);
+                color: rgba(255, 255, 255, 0.8);
                 text-decoration: none;
                 border-radius: 12px;
                 margin-bottom: 0.375rem;
@@ -178,26 +178,14 @@
                 z-index: 1;
             }
 
-            .nav-badge {
-                margin-left: auto;
-                background: rgba(239, 68, 68, 0.9);
-                color: #fff;
-                font-size: 0.7rem;
-                padding: 0.15rem 0.5rem;
-                border-radius: 20px;
-                font-weight: 600;
-                position: relative;
-                z-index: 1;
-            }
-
             /* Main Content Area */
-            .admin-content-wrapper {
+            .participant-content-wrapper {
                 margin-left: var(--sidebar-width);
                 min-height: 100vh;
                 transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
-            .admin-topbar {
+            .participant-topbar {
                 background: #fff;
                 height: var(--topbar-height);
                 border-bottom: 1px solid var(--border-color);
@@ -349,7 +337,7 @@
                 line-height: 1.2;
             }
 
-            .admin-content {
+            .participant-content {
                 padding: 2rem;
             }
 
@@ -373,15 +361,15 @@
 
             /* Mobile Responsive */
             @media (max-width: 992px) {
-                .admin-sidebar {
+                .participant-sidebar {
                     transform: translateX(-100%);
                 }
 
-                .admin-sidebar.active {
+                .participant-sidebar.active {
                     transform: translateX(0);
                 }
 
-                .admin-content-wrapper {
+                .participant-content-wrapper {
                     margin-left: 0;
                 }
 
@@ -413,11 +401,11 @@
             }
 
             @media (max-width: 576px) {
-                .admin-topbar {
+                .participant-topbar {
                     padding: 0 1rem;
                 }
 
-                .admin-content {
+                .participant-content {
                     padding: 1rem;
                 }
 
@@ -442,7 +430,7 @@
                 }
             }
 
-            .admin-content > * {
+            .participant-content > * {
                 animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             }
         </style>
@@ -452,41 +440,36 @@
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <!-- Sidebar -->
-        <aside class="admin-sidebar" id="adminSidebar">
+        <aside class="participant-sidebar" id="participantSidebar">
             <div class="sidebar-logo">
-                <h2>{{ config('app.name', 'Admin') }}</h2>
+                <h2>{{ config('app.name', 'Participant') }}</h2>
                 <p>Control Panel</p>
             </div>
 
             <nav class="sidebar-nav">
                 <div class="nav-section-title">Main</div>
-                <a href="{{ route('admin.dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                <a href="{{ route('participant.dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('participant.dashboard') ? 'active' : '' }}">
                     <i class="bi bi-grid-fill"></i>
                     <span>Dashboard</span>
                 </a>
 
                 <div class="nav-section-title">Management</div>
-                <a href="{{ route('admin.users.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                <a href="{{ route('participant.users.index') }}" class="sidebar-nav-link {{ request()->routeIs('participant.users.*') ? 'active' : '' }}">
                     <i class="bi bi-people-fill"></i>
                     <span>Users</span>
                 </a>
 
-                <a href="{{ route('admin.event.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.event.*') ? 'active' : '' }}">
+                <a href="{{ route('participant.event.index') }}" class="sidebar-nav-link {{ request()->routeIs('participant.event.*') ? 'active' : '' }}">
                     <i class="bi bi-calendar-event-fill"></i>
                     <span>Events</span>
                 </a>
-                
-                <a href="{{ route('admin.participants.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.participants.*') ? 'active' : '' }}">
-                    <i class="bi bi-person-badge-fill"></i>
-                    <span>Participants</span>
-                </a>
 
-                <a href="{{ route('admin.category.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.category.*') ? 'active' : '' }}">
+                <a href="{{ route('participant.category.index') }}" class="sidebar-nav-link {{ request()->routeIs('participant.category.*') ? 'active' : '' }}">
                     <i class="bi bi-tag-fill"></i>
                     <span>Categories</span>
                 </a>
 
-                <a href="{{ route('admin.criteria.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.criteria.*') ? 'active' : '' }}">
+                <a href="{{ route('participant.criteria.index') }}" class="sidebar-nav-link {{ request()->routeIs('participant.criteria.*') ? 'active' : '' }}">
                     <i class="bi bi-list-check"></i>
                     <span>Criteria</span>
                 </a>
@@ -495,11 +478,6 @@
                 <a href="{{ route('profile.edit') }}" class="sidebar-nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
                     <i class="bi bi-person-circle"></i>
                     <span>Profile</span>
-                </a>
-
-                <a href="{{ route('admin.settings') }}" class="sidebar-nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
-                    <i class="bi bi-gear-fill"></i>
-                    <span>Settings</span>
                 </a>
 
                 <a href="#" class="sidebar-nav-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -514,9 +492,9 @@
         </aside>
 
         <!-- Main Content Wrapper -->
-        <div class="admin-content-wrapper">
+        <div class="participant-content-wrapper">
             <!-- Top Bar -->
-            <header class="admin-topbar">
+            <header class="participant-topbar">
                 <div class="topbar-left">
                     <button class="sidebar-toggle" id="sidebarToggle">
                         <i class="bi bi-list"></i>
@@ -544,7 +522,7 @@
                         </div>
                         <div class="user-info">
                             <div class="user-name">{{ Auth::user()->name }}</div>
-                            <div class="user-role">Administrator</div>
+                            <div class="user-role">Participant</div>
                         </div>
                         <i class="bi bi-chevron-down" style="color: var(--text-secondary); font-size: 0.875rem;"></i>
                     </div>
@@ -563,7 +541,7 @@
             </header>
 
             <!-- Page Content -->
-            <main class="admin-content">
+            <main class="participant-content">
                 @isset($header)
                     <div class="page-header">
                         {{ $header }}
@@ -580,17 +558,17 @@
         <script>
             // Sidebar Toggle Functionality
             const sidebarToggle = document.getElementById('sidebarToggle');
-            const adminSidebar = document.getElementById('adminSidebar');
+            const participantSidebar = document.getElementById('participantSidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
 
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', function() {
-                    adminSidebar.classList.toggle('active');
+                    participantSidebar.classList.toggle('active');
                     sidebarOverlay.classList.toggle('active');
                 });
 
                 sidebarOverlay.addEventListener('click', function() {
-                    adminSidebar.classList.remove('active');
+                    participantSidebar.classList.remove('active');
                     sidebarOverlay.classList.remove('active');
                 });
             }
@@ -600,7 +578,7 @@
             sidebarLinks.forEach(link => {
                 link.addEventListener('click', function() {
                     if (window.innerWidth < 992) {
-                        adminSidebar.classList.remove('active');
+                        participantSidebar.classList.remove('active');
                         sidebarOverlay.classList.remove('active');
                     }
                 });
@@ -610,7 +588,6 @@
             const searchInput = document.querySelector('.topbar-search input');
             if (searchInput) {
                 searchInput.addEventListener('input', function(e) {
-                    // Add your search logic here
                     console.log('Searching for:', e.target.value);
                 });
             }

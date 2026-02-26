@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->string('file_path')->nullable();
-            $table->enum('status', ['draft', 'submitted', 'under_review', 'reviewed'])->default('draft');
+            $table->enum('status', ['pending', 'draft', 'submitted', 'under_review', 'reviewed'])->default('pending');
             $table->timestamp('submitted_at')->nullable();
             $table->timestamps();
         });

@@ -8,6 +8,7 @@ use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\JudgeController;
 use App\Http\Controllers\CriteriaController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,14 +20,14 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    $user = auth()->user();
+Route::get('/dashboard', function (): \Illuminate\Http\RedirectResponse|\Illuminate\View\View {
+    $user = Auth::user();
     if ($user->role === 'admin') {
         return view('admin.dashboard');
     } elseif ($user->role === 'judge') {
         return redirect()->route('judge.dashboard');
     } else {
-        return view('participant.dashboard', ['submissions' => [], 'competitions' => []]);
+        return redirect()->route('participant.dashboard');
     }
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -97,11 +98,53 @@ Route::prefix('admin')->middleware(['auth', 'verified', 'role:admin'])->group(fu
             'criteria' => 'criterion',
         ],
     ]);
+    
+    // Toggle criteria status (activate/deactivate)
+    Route::post('/criteria/{criterion}/toggle-status', [CriteriaController::class, 'toggleStatus'])->name('admin.criteria.toggleStatus');
+    
+    // Participant management routes
+    Route::get('/participants', [AdminController::class, 'participants'])->name('admin.participants.index');
+    Route::post('/participants/{submission}/approve', [AdminController::class, 'approveParticipant'])->name('admin.participants.approve');
+    Route::post('/participants/{submission}/decline', [AdminController::class, 'declineParticipant'])->name('admin.participants.decline');
 });
 
 // Participant Dashboard Routes
 Route::prefix('participant')->middleware(['auth', 'verified', 'role:participant'])->group(function () {
     Route::get('/dashboard', [ParticipantController::class, 'dashboard'])->name('participant.dashboard');
+    Route::get('/settings', [ParticipantController::class, 'settings'])->name('participant.settings');
+    
+    // Events CRUD
+    Route::get('/events', [ParticipantController::class, 'eventIndex'])->name('participant.event.index');
+    Route::get('/events/create', [ParticipantController::class, 'eventCreate'])->name('participant.event.create');
+    Route::post('/events', [ParticipantController::class, 'eventStore'])->name('participant.event.store');
+    Route::get('/events/{event}', [ParticipantController::class, 'eventShow'])->name('participant.event.show');
+    Route::get('/events/{event}/edit', [ParticipantController::class, 'eventEdit'])->name('participant.event.edit');
+    Route::put('/events/{event}', [ParticipantController::class, 'eventUpdate'])->name('participant.event.update');
+    Route::delete('/events/{event}', [ParticipantController::class, 'eventDestroy'])->name('participant.event.destroy');
+    
+    // Apply to Event
+    Route::post('/events/{event}/apply', [ParticipantController::class, 'eventApply'])->name('participant.event.apply');
+    
+    // Categories CRUD
+    Route::get('/categories', [ParticipantController::class, 'categoryIndex'])->name('participant.category.index');
+    Route::get('/categories/create', [ParticipantController::class, 'categoryCreate'])->name('participant.category.create');
+    Route::post('/categories', [ParticipantController::class, 'categoryStore'])->name('participant.category.store');
+    Route::get('/categories/{category}', [ParticipantController::class, 'categoryShow'])->name('participant.category.show');
+    Route::get('/categories/{category}/edit', [ParticipantController::class, 'categoryEdit'])->name('participant.category.edit');
+    Route::put('/categories/{category}', [ParticipantController::class, 'categoryUpdate'])->name('participant.category.update');
+    Route::delete('/categories/{category}', [ParticipantController::class, 'categoryDestroy'])->name('participant.category.destroy');
+    
+    // Criteria CRUD
+    Route::get('/criteria', [ParticipantController::class, 'criteriaIndex'])->name('participant.criteria.index');
+    Route::get('/criteria/create', [ParticipantController::class, 'criteriaCreate'])->name('participant.criteria.create');
+    Route::post('/criteria', [ParticipantController::class, 'criteriaStore'])->name('participant.criteria.store');
+    Route::get('/criteria/{criterion}', [ParticipantController::class, 'criteriaShow'])->name('participant.criteria.show');
+    Route::get('/criteria/{criterion}/edit', [ParticipantController::class, 'criteriaEdit'])->name('participant.criteria.edit');
+    Route::put('/criteria/{criterion}', [ParticipantController::class, 'criteriaUpdate'])->name('participant.criteria.update');
+    Route::delete('/criteria/{criterion}', [ParticipantController::class, 'criteriaDestroy'])->name('participant.criteria.destroy');
+    
+    // Users (View Only)
+    Route::get('/users', [ParticipantController::class, 'userIndex'])->name('participant.users.index');
 });
 
 // Judge Dashboard Routes
@@ -159,6 +202,10 @@ Route::prefix('judge')->middleware(['auth', 'verified', 'role:judge'])->group(fu
             'criteria' => 'criterion',
         ],
     ]);
+    
+    // Score entry routes for criteria
+    Route::get('/criteria/{criterion}/score/create', [CriteriaController::class, 'createScore'])->name('judge.criteria.createScore');
+    Route::post('/criteria/{criterion}/score', [CriteriaController::class, 'storeScore'])->name('judge.criteria.storeScore');
     Route::resource('users', UserController::class, [
         'names' => [
             'index' => 'judge.users.index',

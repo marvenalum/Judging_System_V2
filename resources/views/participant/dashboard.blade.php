@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-sidebar>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Participant Dashboard') }}
@@ -66,13 +66,15 @@
                         <div class="mt-8">
                             <h2 class="text-xl font-semibold mb-4">Active Competitions</h2>
                             <div class="bg-gray-50 p-4 rounded">
-                                <p class="text-gray-600">No active competitions at the moment.</p>
-                                <!-- Placeholder for competitions list -->
-                                <!-- @foreach($competitions as $competition)
-                                    <div class="mb-2">
-                                        <strong>{{ $competition->name }}</strong> - Deadline: {{ $competition->deadline }}
-                                    </div>
-                                @endforeach -->
+                                @if($events->isEmpty())
+                                    <p class="text-gray-600">No active competitions at the moment.</p>
+                                @else
+                                    @foreach($events as $event)
+                                        <div class="mb-2">
+                                            <strong>{{ $event->event_name }}</strong> - Deadline: {{ $event->end_date }}
+                                        </div>
+                                    @endforeach
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -80,4 +82,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</x-app-sidebar>

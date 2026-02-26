@@ -27,11 +27,12 @@
                             <table class="min-w-full bg-white">
                                 <thead>
                                     <tr>
-                                        <th class="py-2 px-4 border-b">ID</th>
+                                        <th class="py-2 px-4 border-b">Criteria ID</th>
+                                        <th class="py-2 px-4 border-b">Category ID</th>
                                         <th class="py-2 px-4 border-b">Name</th>
                                         <th class="py-2 px-4 border-b">Description</th>
-                                        <th class="py-2 px-4 border-b">Event</th>
-                                        <th class="py-2 px-4 border-b">Percentage Weight</th>
+                                        <th class="py-2 px-4 border-b">Maximum Score</th>
+                                        <th class="py-2 px-4 border-b">Criteria Weight</th>
                                         <th class="py-2 px-4 border-b">Status</th>
                                         <th class="py-2 px-4 border-b">Actions</th>
                                     </tr>
@@ -40,17 +41,19 @@
                                     @foreach($criteria as $criterion)
                                         <tr>
                                             <td class="py-2 px-4 border-b">{{ $criterion->id }}</td>
+                                            <td class="py-2 px-4 border-b">{{ $criterion->category_id }}</td>
                                             <td class="py-2 px-4 border-b">{{ $criterion->name }}</td>
                                             <td class="py-2 px-4 border-b">{{ $criterion->description ?? 'N/A' }}</td>
-                                            <td class="py-2 px-4 border-b">{{ $criterion->event->name ?? 'N/A' }}</td>
-                                            <td class="py-2 px-4 border-b">{{ $criterion->percentage_weight }}%</td>
+                                            <td class="py-2 px-4 border-b">{{ $criterion->max_score ?? 'N/A' }}</td>
+                                            <td class="py-2 px-4 border-b">{{ $criterion->weight ?? 'N/A' }}%</td>
                                             <td class="py-2 px-4 border-b">
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $criterion->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                                     {{ ucfirst($criterion->status) }}
                                                 </span>
                                             </td>
                                             <td class="py-2 px-4 border-b">
-                                                <a href="{{ route('judge.criteria.show', $criterion) }}" class="text-blue-600 hover:text-blue-800">View</a>
+                                                <a href="{{ route('judge.criteria.show', $criterion) }}" class="text-blue-600 hover:text-blue-800 mr-2">View</a>
+                                                <a href="{{ route('judge.criteria.createScore', $criterion) }}" class="text-green-600 hover:text-green-800">Enter Score</a>
                                             </td>
                                         </tr>
                                     @endforeach

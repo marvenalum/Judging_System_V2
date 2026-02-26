@@ -44,6 +44,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => 'string',
         ];
     }
 
@@ -69,5 +70,28 @@ class User extends Authenticatable
     public function submissions()
     {
         return $this->hasMany(\App\Models\Submission::class, 'participant_id');
+    }
+
+    /**
+     * Get the events assigned to this user (as a judge).
+     */
+    public function assignedEvents()
+    {
+        return $this->hasManyThrough(
+            \App\Models\Event::class,
+            \App\Models\JudgeEventAssignment::class,
+            'judge_id',
+            'id',
+            'id',
+            'event_id'
+        );
+    }
+
+    /**
+     * Get the scores given by this user (as a judge).
+     */
+    public function givenScores()
+    {
+        return $this->hasMany(\App\Models\Score::class, 'judge_id');
     }
 }

@@ -10,10 +10,13 @@ class Criteria extends Model
 
     protected $fillable = [
         'name',
+        'description',
         'event_id',
         'category_id',
         'max_score',
         'weight',
+        'percentage_weight',
+        'status',
     ];
 
     protected $casts = [
@@ -29,5 +32,13 @@ class Criteria extends Model
     public function event()
     {
         return $this->belongsTo(Event::class);
+    }
+
+    /**
+     * Get the scores for this criterion.
+     */
+    public function scores()
+    {
+        return $this->hasMany(Score::class);
     }
 }

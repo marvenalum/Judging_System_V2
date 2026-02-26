@@ -1,35 +1,35 @@
-# CriteriaController Update Plan
+# Criteria CRUD Implementation TODO
 
-## Task
-Update CriteriaController to use the data structure: id, event_id, category_id, name, max_score, weight
+## Completed:
+- [x] Analyze current implementation
+- [x] Create plan and get user confirmation
+- [x] Update CriteriaController.php
+  - [x] Update destroy() method for soft delete
+  - [x] Add toggleStatus() method
+  - [x] Add score check before deletion
+  - [x] Add status filter to index()
 
-## Changes Required
+- [x] Add toggle route to web.php
 
-### 1. Add missing imports
-- [ ] Add `use App\Models\Category;` import
+- [x] Update resources/views/admin/criteria/index.blade.php
+  - [x] Add status filter dropdown
+  - [x] Show score count in table
+  - [x] Add warning if scores exist
+  - [x] Update actions (toggle instead of delete)
 
-### 2. create() method
-- [ ] Add `$events = Event::all();` to pass events to view
-- [ ] Pass `$events` to view
+- [x] Update resources/views/admin/criteria/create.blade.php
+  - [x] Add category_id field
+  - [x] Add max_score field
 
-### 3. store() method
-- [ ] Change `maximum_score` validation to `max_score`
-- [ ] Remove `description` validation
-- [ ] Remove `status` validation
-- [ ] Add `event_id` validation
+- [x] Update resources/views/admin/criteria/edit.blade.php
+  - [x] Add category_id field
+  - [x] Add max_score field
 
-### 4. edit() method
-- [ ] Add `$events = Event::all();` to pass events to view
-- [ ] Pass `$events` to view
-
-### 5. update() method
-- [ ] Change `percentage_weight` validation to `weight`
-- [ ] Remove `description` validation
-- [ ] Remove `status` validation
-- [ ] Add `category_id` validation
-
-### 6. show() method
-- [ ] Change `->load('category')` to `->load(['category', 'event'])`
-
-## Implementation Status
-- [ ] Not started
+## Testing:
+- [ ] Test create new criteria
+- [ ] Test view criteria
+- [ ] Test update criteria
+- [ ] Test soft delete (deactivate)
+- [ ] Test toggle status
+- [ ] Test preventing deletion when scores exist
+- [ ] Test status filter

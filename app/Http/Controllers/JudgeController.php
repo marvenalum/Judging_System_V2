@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Event;
 use App\Models\Submission;
@@ -10,8 +11,17 @@ use App\Models\Score;
 
 class JudgeController extends Controller
 {
+    /**
+     * Get the currently authenticated user.
+     */
+    private function getAuthUser(): ?User
+    {
+        return Auth::user();
+    }
+
     public function dashboard() {
-        $user = auth()->user();
+        /** @var User $user */
+        $user = Auth::user();
         
         // Get assigned events count
         $assignedEvents = $user->judgeAssignments()->count();
@@ -26,12 +36,12 @@ class JudgeController extends Controller
             })->count();
         
         // Get pending scores count
-        $pendingScores = \App\Models\Score::where('judge_id', $user->id)
+        $pendingScores = \App\Models\Score::where('judge_id', Auth::id())
             ->where('status', 'pending')
             ->count();
         
         // Get submitted scores count
-        $submittedScores = \App\Models\Score::where('judge_id', $user->id)
+        $submittedScores = \App\Models\Score::where('judge_id', Auth::id())
             ->where('status', 'submitted')
             ->count();
         
@@ -55,7 +65,9 @@ class JudgeController extends Controller
             });
         } else {
             // If no event_id, show participants from events assigned to this judge
-            $assignedEventIds = auth()->user()->judgeAssignments()->pluck('event_id');
+            /** @var User $authUser */
+            $authUser = Auth::user();
+            $assignedEventIds = $authUser->judgeAssignments()->pluck('event_id');
             $query->whereHas('submissions', function ($q) use ($assignedEventIds) {
                 $q->whereIn('event_id', $assignedEventIds);
             });
@@ -78,7 +90,9 @@ class JudgeController extends Controller
             });
         } else {
             // If no event_id, show participants from events assigned to this judge
-            $assignedEventIds = auth()->user()->judgeAssignments()->pluck('event_id');
+            /** @var User $authUser */
+            $authUser = Auth::user();
+            $assignedEventIds = $authUser->judgeAssignments()->pluck('event_id');
             $query->whereHas('submissions', function ($q) use ($assignedEventIds) {
                 $q->whereIn('event_id', $assignedEventIds);
             });
@@ -91,7 +105,7 @@ class JudgeController extends Controller
 
     public function reviewScores(Request $request) {
         $query = Score::with(['participant', 'event', 'criteria'])
-            ->where('judge_id', auth()->id());
+            ->where('judge_id', Auth::id());
 
         if ($request->has('status') && $request->status) {
             $query->where('status', $request->status);
@@ -103,7 +117,8 @@ class JudgeController extends Controller
     }
 
     public function scoringEdit($scoreId = null) {
-        $user = auth()->user();
+        /** @var User $user */
+        $user = Auth::user();
         
         if ($scoreId) {
             // Get specific score
@@ -124,12 +139,13 @@ class JudgeController extends Controller
     }
 
     public function profile() {
-        $user = auth()->user();
+        /** @var User $user */
+        $user = Auth::user();
         return view('judge.profile', compact('user'));
     }
 
     public function scoringUpdate(Request $request, $scoreId) {
-        $score = Score::where('judge_id', auth()->id())->findOrFail($scoreId);
+        $score = Score::where('judge_id', Auth::id())->findOrFail($scoreId);
 
         $validated = $request->validate([
             'score' => 'required|numeric|min:0|max:100',
@@ -140,5 +156,35 @@ class JudgeController extends Controller
         $score->update($validated);
 
         return redirect()->route('judge.review-scores')->with('success', 'Score updated successfully.');
+    }
+
+    /**
+     * Get events assigned to the logged-in judge.
+     */
+ 
+    public function myEvents() {
+        /** @var User $authUser */
+        $authUser = Auth::user();
+        
+        if ($authUser && $authUser->role === 'judge') {
+            $events = $authUser->judgeAssignments()
+                ->with('event')
+                ->get()
+                ->pluck('event')
+                ->filter();
+            return view('judge.events.index', compact('events'));
+        } else {
+            $events = Event::paginate(15);
+            return view('judge.events.index', compact('events'));
+        }
+    
+    }
+
+    /**
+     * Get events assigned to the logged-in judge (alias for myEvents).
+     */
+    public function assignedEvents()
+    {
+        return $this->myEvents();
     }
 }

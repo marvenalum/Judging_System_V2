@@ -1,11 +1,11 @@
-<x-admin-layout>
+<x-app-sidebar>
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
-                {{ __('Manage Events') }}
+                {{ __('Manage Categories') }}
             </h2>
             <div class="text-sm text-gray-600">
-                {{ $events->count() }} {{ Str::plural('event', $events->count()) }}
+                {{ $categories->count() }} {{ Str::plural('category', $categories->count()) }}
             </div>
         </div>
     </x-slot>
@@ -29,15 +29,15 @@
                 <div class="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
                     <div class="flex justify-between items-center">
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900">All Events</h3>
-                            <p class="mt-1 text-sm text-gray-600">View and manage all events in the system</p>
+                            <h3 class="text-xl font-bold text-gray-900">All Categories</h3>
+                            <p class="mt-1 text-sm text-gray-600">View and manage all categories in the system</p>
                         </div>
-                        <a href="{{ route('admin.event.create') }}" 
+                        <a href="{{ route('participant.category.create') }}" 
                            class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
-                            Add New Event
+                            Add New Category
                         </a>
                     </div>
                 </div>
@@ -48,97 +48,69 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                            </svg>
-                                            Event Name
-                                        </div>
-                                    </th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                        <div class="flex items-center">
-                                            <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
-                                            </svg>
-                                            Description
-                                        </div>
-                                    </th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Dates</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Name</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Event</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Weight</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
                                     <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($events as $event)
+                                @forelse($categories as $category)
                                     <tr class="hover:bg-gray-50 transition-colors duration-150">
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
-                                                <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
-                                                    <span class="text-white font-bold text-sm">{{ strtoupper(substr($event->event_name, 0, 2)) }}</span>
+                                                <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm">
+                                                    <span class="text-white font-bold text-sm">{{ strtoupper(substr($category->name, 0, 2)) }}</span>
                                                 </div>
                                                 <div class="ml-4">
-                                                    <div class="text-sm font-semibold text-gray-900">{{ $event->event_name }}</div>
-                                                    <div class="text-xs text-gray-500">{{ ucfirst($event->event_type) }}</div>
+                                                    <div class="text-sm font-semibold text-gray-900">{{ $category->name }}</div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <div class="text-sm text-gray-600 max-w-md">
-                                                {{ $event->event_description ? Str::limit($event->event_description, 60) : 'No description provided' }}
+                                            <div class="text-sm text-gray-600">
+                                                {{ $category->event ? $category->event->event_name : 'No event' }}
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">
-                                                <div class="flex items-center text-xs">
-                                                    <svg class="w-3 h-3 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                                    </svg>
-                                                    {{ $event->start_date->format('M d, Y') }}
-                                                </div>
-                                                <div class="text-gray-400">to</div>
-                                                <div class="flex items-center text-xs">
-                                                    <svg class="w-3 h-3 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                                    </svg>
-                                                    {{ $event->end_date->format('M d, Y') }}
-                                                </div>
+                                                {{ $category->percentage_weight ?? 0 }}%
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="@class([
                                                 'px-2 py-1 rounded-full text-xs font-semibold',
-                                                'bg-blue-100 text-blue-800' => $event->event_status === 'upcoming',
-                                                'bg-green-100 text-green-800' => $event->event_status === 'ongoing',
-                                                'bg-gray-100 text-gray-800' => $event->event_status === 'completed'
+                                                'bg-green-100 text-green-800' => $category->status === 'active',
+                                                'bg-gray-100 text-gray-800' => $category->status === 'inactive'
                                             ])">
-                                                {{ ucfirst($event->event_status) }}
+                                                {{ ucfirst($category->status) }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div class="flex items-center justify-end space-x-2">
-                                                <a href="{{ route('admin.event.show', $event) }}" 
+                                                <a href="{{ route('participant.category.show', $category) }}" 
                                                    class="inline-flex items-center px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded-md transition-colors duration-150"
-                                                   title="View Event">
+                                                   title="View Category">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                                     </svg>
                                                 </a>
-                                                <a href="{{ route('admin.event.edit', $event) }}" 
+                                                <a href="{{ route('participant.category.edit', $category) }}" 
                                                    class="inline-flex items-center px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition-colors duration-150"
-                                                   title="Edit Event">
+                                                   title="Edit Category">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                     </svg>
                                                 </a>
-                                                <form method="POST" action="{{ route('admin.event.destroy', $event) }}" class="inline-block">
+                                                <form method="POST" action="{{ route('participant.category.destroy', $category) }}" class="inline-block">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" 
                                                             class="inline-flex items-center px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition-colors duration-150"
-                                                            onclick="return confirm('Are you sure you want to delete this event? This action cannot be undone.')"
-                                                            title="Delete Event">
+                                                            onclick="return confirm('Are you sure you want to delete this category?')"
+                                                            title="Delete Category">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                         </svg>
@@ -152,16 +124,16 @@
                                         <td colspan="5" class="px-6 py-16 text-center">
                                             <div class="flex flex-col items-center justify-center">
                                                 <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                                                 </svg>
-                                                <h3 class="text-lg font-semibold text-gray-900 mb-2">No events yet</h3>
-                                                <p class="text-gray-600 mb-4">Get started by creating your first event</p>
-                                                <a href="{{ route('admin.event.create') }}" 
+                                                <h3 class="text-lg font-semibold text-gray-900 mb-2">No categories yet</h3>
+                                                <p class="text-gray-600 mb-4">Get started by creating your first category</p>
+                                                <a href="{{ route('participant.category.create') }}" 
                                                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-150">
                                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                                     </svg>
-                                                    Create Event
+                                                    Create Category
                                                 </a>
                                             </div>
                                         </td>
@@ -172,13 +144,13 @@
                     </div>
 
                     <!-- Pagination -->
-                    @if($events instanceof \Illuminate\Pagination\LengthAwarePaginator && $events->hasPages())
+                    @if($categories instanceof \Illuminate\Pagination\LengthAwarePaginator && $categories->hasPages())
                         <div class="mt-6">
-                            {{ $events->links() }}
+                            {{ $categories->links() }}
                         </div>
                     @endif
                 </div>
             </div>
         </div>
     </div>
-</x-admin-layout>
+</x-app-sidebar>

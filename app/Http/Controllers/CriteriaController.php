@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Criteria;
 use App\Models\Category;
 use App\Models\Event;
+use App\Models\User;
+use App\Models\Score;
 use Illuminate\Http\Request;
 
 class CriteriaController extends Controller
@@ -16,17 +18,146 @@ class CriteriaController extends Controller
     {
         // Check if accessed via judge routes
         if (request()->routeIs('judge.criteria.index')) {
+            // Verify user is authenticated
+            if (!auth()->check()) {
+                return redirect()->route('login')->with('error', 'Please login to access this page.');
+            }
+            
             // For judges, show only criteria for events they are assigned to
             $assignedEventIds = auth()->user()->judgeAssignments()->pluck('event_id');
-            $criteria = Criteria::with('event')
+            
+            // Check if user has any event assignments
+            if ($assignedEventIds->isEmpty()) {
+                return view('judge.criteria.index', compact('assignedEventIds'))->with('message', 'You have not been assigned to any events yet.');
+            }
+            
+            $criteria = Criteria::with('event', 'category')
                 ->whereIn('event_id', $assignedEventIds)
+                ->where('status', 'active') // Only show active criteria
                 ->get();
             return view('judge.criteria.index', compact('criteria'));
         }
 
-        // Default admin view
-        $criteria = Criteria::with('event')->get();
-        return view('admin.criteria.index', compact('criteria'));
+        // Default admin view - with status filter
+        $query = Criteria::with(['event', 'category', 'scores']);
+        
+        // Filter by status if provided
+        if (request()->has('status') && request('status') !== '') {
+            $query->where('status', request('status'));
+        }
+        
+        $criteria = $query->get();
+        
+        // Get score counts efficiently using the loaded relationship
+        $scoreCounts = [];
+        foreach ($criteria as $c) {
+            $scoreCounts[$c->id] = $c->scores->count();
+        }
+        
+        return view('admin.criteria.index', compact('criteria', 'scoreCounts'));
+    }
+
+    /**
+     * Show the form for creating a score for a specific criterion.
+     */
+    public function createScore(Criteria $criteria)
+    {
+        // Verify user is authenticated
+        if (!auth()->check()) {
+            return redirect()->route('login')->with('error', 'Please login to access this page.');
+        }
+        
+        // Verify judge is assigned to this event
+        $isAssignedToEvent = auth()->user()->judgeAssignments()
+            ->where('event_id', $criteria->event_id)
+            ->exists();
+            
+        if (!$isAssignedToEvent) {
+            return redirect()->route('judge.criteria.index')
+                ->with('error', 'You are not assigned to the event for this criterion.');
+        }
+        
+        // Verify criteria is active
+        if ($criteria->status !== 'active') {
+            return redirect()->route('judge.criteria.index')
+                ->with('error', 'This criterion is not active.');
+        }
+        
+        // Get participants for this criteria's event
+        $eventId = $criteria->event_id;
+        
+        // Get participants who have submissions in this event
+        $participants = User::where('role', 'participant')
+            ->whereHas('submissions', function ($query) use ($eventId) {
+                $query->where('event_id', $eventId)->where('status', 'approved');
+            })
+            ->get();
+
+        return view('judge.scoring.create', compact('criteria', 'participants'));
+    }
+
+    /**
+     * Store a newly created score in storage.
+     */
+    public function storeScore(Request $request, Criteria $criteria)
+    {
+        // Verify user is authenticated
+        if (!auth()->check()) {
+            return redirect()->route('login')->with('error', 'Please login to access this page.');
+        }
+        
+        // Verify judge is assigned to this event
+        $isAssignedToEvent = auth()->user()->judgeAssignments()
+            ->where('event_id', $criteria->event_id)
+            ->exists();
+            
+        if (!$isAssignedToEvent) {
+            return redirect()->route('judge.criteria.index')
+                ->with('error', 'You are not assigned to the event for this criterion.');
+        }
+        
+        // Verify criteria is active
+        if ($criteria->status !== 'active') {
+            return redirect()->route('judge.criteria.index')
+                ->with('error', 'This criterion is not active.');
+        }
+        
+        $request->validate([
+            'participant_id' => 'required|exists:users,id',
+            'score' => 'required|numeric|min:0|max:' . ($criteria->max_score ?? 100),
+            'comments' => 'nullable|string|max:1000',
+            'status' => 'required|in:draft,pending,submitted',
+        ]);
+
+        // Check if score already exists for this judge, participant, and criteria
+        $existingScore = Score::where('judge_id', auth()->id())
+            ->where('participant_id', $request->participant_id)
+            ->where('criteria_id', $criteria->id)
+            ->first();
+
+        if ($existingScore) {
+            // Update existing score
+            $existingScore->update([
+                'score' => $request->score,
+                'comments' => $request->comments,
+                'status' => $request->status,
+            ]);
+            $message = 'Score updated successfully.';
+        } else {
+            // Create new score
+            Score::create([
+                'judge_id' => auth()->id(),
+                'participant_id' => $request->participant_id,
+                'event_id' => $criteria->event_id,
+                'criteria_id' => $criteria->id,
+                'score' => $request->score,
+                'comments' => $request->comments,
+                'status' => $request->status,
+            ]);
+            $message = 'Score created successfully.';
+        }
+
+        return redirect()->route('judge.criteria.index')->with('success', $message);
     }
 
     /**
@@ -46,13 +177,22 @@ class CriteriaController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
             'event_id' => 'required|exists:events,id',
             'category_id' => 'required|exists:categories,id',
             'max_score' => 'nullable|numeric|min:0',
-            'weight' => 'nullable|numeric|min:0|max:100',
+            'weight' => 'nullable|numeric|min:0',
+            'percentage_weight' => 'nullable|numeric|min:0|max:100',
+            'status' => 'nullable|in:active,inactive',
         ]);
 
-        Criteria::create($request->all());
+        $data = $request->all();
+        // Set default status if not provided
+        if (!isset($data['status'])) {
+            $data['status'] = 'active';
+        }
+
+        Criteria::create($data);
 
         return redirect()->route('admin.criteria.index')->with('success', 'Criteria created successfully.');
     }
@@ -83,10 +223,13 @@ class CriteriaController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
             'event_id' => 'required|exists:events,id',
             'category_id' => 'required|exists:categories,id',
             'max_score' => 'nullable|numeric|min:0',
-            'weight' => 'nullable|numeric|min:0|max:100',
+            'weight' => 'nullable|numeric|min:0',
+            'percentage_weight' => 'nullable|numeric|min:0|max:100',
+            'status' => 'nullable|in:active,inactive',
         ]);
 
         $criteria->update($request->all());
@@ -95,12 +238,33 @@ class CriteriaController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage (Soft Delete).
      */
     public function destroy(Criteria $criteria)
     {
-        $criteria->delete();
+        // Check if scores exist for this criteria
+        $scoreCount = Score::where('criteria_id', $criteria->id)->count();
+        
+        if ($scoreCount > 0) {
+            return redirect()->route('admin.criteria.index')
+                ->with('error', 'Cannot delete criterion "' . $criteria->name . '" because it has ' . $scoreCount . ' score(s) associated with it. Please deactivate it instead.');
+        }
 
-        return redirect()->route('admin.criteria.index')->with('success', 'Criteria deleted successfully.');
+        // Soft delete: set status to inactive instead of permanent deletion
+        $criteria->update(['status' => 'inactive']);
+
+        return redirect()->route('admin.criteria.index')->with('success', 'Criteria deactivated successfully.');
+    }
+
+    /**
+     * Toggle the status of the specified criterion (activate/deactivate).
+     */
+    public function toggleStatus(Criteria $criteria)
+    {
+        $newStatus = $criteria->status === 'active' ? 'inactive' : 'active';
+        $criteria->update(['status' => $newStatus]);
+
+        $statusText = $newStatus === 'active' ? 'activated' : 'deactivated';
+        return redirect()->route('admin.criteria.index')->with('success', 'Criteria ' . $statusText . ' successfully.');
     }
 }
