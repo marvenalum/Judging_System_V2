@@ -1,28 +1,50 @@
-# Use Laravel Sail's PHP 8.2 image
-FROM serversideup/php:8.2-fpm-nginx
+FROM php:8.2-fpm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    nginx \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy only composer files first (for better caching)
-COPY composer.json composer.lock ./
-
-# Install dependencies (without running scripts)
-RUN composer install --no-interaction --optimize-autoloader --no-dev --no-scripts
-
 # Copy application files
 COPY . .
 
-# Set proper permissions BEFORE running any Laravel commands
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/storage \
-    && chmod -R 775 /var/www/html/bootstrap/cache
+# Create storage structure and set permissions
+RUN mkdir -p storage/framework/{sessions,views,cache} \
+    && mkdir -p storage/logs \
+    && mkdir -p bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 storage bootstrap/cache
 
-# Run composer scripts now that permissions are set
-RUN composer run-script post-autoload-dump
+# Install dependencies
+RUN composer install --no-interaction --optimize-autoloader --no-dev
 
-# Generate optimized cache
-RUN php artisan optimize
+# Copy nginx configuration
+COPY docker/nginx.conf /etc/nginx/nginx.conf
 
-# Expose port 80
+# Create startup script
+RUN echo '#!/bin/sh\n\
+service nginx start\n\
+php-fpm' > /start.sh && chmod +x /start.sh
+
+# Expose ports
 EXPOSE 80
+
+# Start services
+CMD ["/start.sh"]
