@@ -4,15 +4,25 @@ FROM serversideup/php:8.2-fpm-nginx
 # Set working directory
 WORKDIR /var/www/html
 
+# Copy only composer files first (for better caching)
+COPY composer.json composer.lock ./
+
+# Install dependencies (without running scripts)
+RUN composer install --no-interaction --optimize-autoloader --no-dev --no-scripts
+
 # Copy application files
 COPY . .
 
-# Install dependencies
-RUN composer install --no-interaction --optimize-autoloader --no-dev
+# Set proper permissions BEFORE running any Laravel commands
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Run composer scripts now that permissions are set
+RUN composer run-script post-autoload-dump
+
+# Generate optimized cache
+RUN php artisan optimize
 
 # Expose port 80
 EXPOSE 80
