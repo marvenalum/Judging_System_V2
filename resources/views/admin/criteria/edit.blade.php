@@ -44,7 +44,7 @@
                                 <select name="event_id" id="event_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
                                     <option value="">Select an event</option>
                                     @foreach($events as $event)
-                                        <option value="{{ $event->id }}" {{ old('event_id', $criteria->event_id) == $event->id ? 'selected' : '' }}>{{ $event->name }}</option>
+                                        <option value="{{ $event->id }}" {{ old('event_id', $criteria->event_id) == $event->id ? 'selected' : '' }}>{{ $event->event_name }}</option>
                                     @endforeach
                                 </select>
                             </div>

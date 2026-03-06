@@ -22,7 +22,7 @@
                         <h3 class="font-semibold text-lg mb-2">Criteria Details</h3>
                         <div class="grid grid-cols-2 gap-4 text-sm">
                             <div>
-                                <span class="font-medium">Event:</span> {{ $criteria->event->name ?? 'N/A' }}
+                                <span class="font-medium">Event:</span> {{ $criteria->event->event_name ?? 'N/A' }}
                             </div>
                             <div>
                                 <span class="font-medium">Category:</span> {{ $criteria->category->name ?? 'N/A' }}

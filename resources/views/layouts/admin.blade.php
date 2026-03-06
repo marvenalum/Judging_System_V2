@@ -22,9 +22,9 @@
 
         <style>
             :root {
-                --primary-gradient-start: #0f172a;
+                --primary-gradient-start: #000000;
                 --primary-gradient-end: #211e3b;
-                --accent-primary: #06b6d4;
+                --accent-primary: #f3d008;
                 --accent-secondary: #8b5cf6;
                 --sidebar-width: 280px;
                 --topbar-height: 70px;
@@ -454,8 +454,8 @@
         <!-- Sidebar -->
         <aside class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-logo">
-                <h2>{{ config('app.name', 'Admin') }}</h2>
-                <p>Control Panel</p>
+                <h2>ADMIN DASHBOARD</h2>
+
             </div>
 
             <nav class="sidebar-nav">

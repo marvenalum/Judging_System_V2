@@ -25,14 +25,34 @@
                         </div>
                     @endif
 
-                    <!-- Create New Score Section -->
+                        <!-- Create New Score Section -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
                         <h2 class="text-lg font-semibold text-blue-900 mb-4">Create New Score</h2>
                         <p class="text-sm text-blue-700 mb-4">Select a criteria below to enter a new score for a participant.</p>
                         
                         @if($availableCriteria->isEmpty())
-                            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-                                No active criteria found. Please ensure you are assigned to an event with active criteria.
+                            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+                                <p class="font-semibold">No active criteria found. Please ensure you are assigned to an event with active criteria.</p>
+                            </div>
+                            
+                            <!-- Diagnostic Information -->
+                            <div class="bg-gray-50 border border-gray-200 rounded p-4 text-sm">
+                                <p class="font-medium text-gray-700 mb-2">Troubleshooting:</p>
+                                <ul class="list-disc list-inside text-gray-600 space-y-1">
+                                    @if(!isset($assignedEvents) || $assignedEvents->isEmpty())
+                                        <li>You are not assigned to any events. Contact the administrator to assign you to events.</li>
+                                    @else
+                                        <li>You have {{ $assignedEvents->count() }} assigned event(s).</li>
+                                    @endif
+                                    
+                                    @if(isset($assignedEvents) && $assignedEvents->isNotEmpty())
+                                        @if(!isset($assignedCategories) || $assignedCategories->isEmpty())
+                                            <li>No categories found in your assigned events.</li>
+                                        @else
+                                            <li>You have {{ $assignedCategories->count() }} category(ies).</li>
+                                        @endif
+                                    @endif
+                                </ul>
                             </div>
                         @else
                             <form method="GET" action="{{ route('judge.criteria.createScore') }}" class="flex flex-col sm:flex-row gap-4">
@@ -41,7 +61,7 @@
                                         <option value="">-- Select Criteria --</option>
                                         @foreach($availableCriteria as $criterion)
                                             <option value="{{ $criterion->id }}">
-                                                {{ $criterion->event->name ?? 'N/A' }} - {{ $criterion->category->name ?? 'N/A' }} - {{ $criterion->name }} (Max: {{ $criterion->max_score }})
+                                                {{ $criterion->event->event_name ?? 'N/A' }} - {{ $criterion->category->name ?? 'N/A' }} - {{ $criterion->name }} (Max: {{ $criterion->max_score }})
                                             </option>
                                         @endforeach
                                     </select>
@@ -90,7 +110,7 @@
                                                 {{ $score->participant->name ?? 'N/A' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                {{ $score->event->name ?? 'N/A' }}
+                                                {{ $score->event->event_name ?? 'N/A' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 {{ $score->criteria->name ?? 'N/A' }}

@@ -114,7 +114,7 @@ class AdminController extends Controller
      * Approve a participant submission.
      */
     public function approveParticipant(Submission $submission) {
-        $submission->update(['status' => 'submitted']);
+        $submission->update(['status' => 'reviewed']);
         
         return redirect()->route('admin.participants.index')
             ->with('success', 'Participant approved successfully.');

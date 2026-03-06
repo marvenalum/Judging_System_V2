@@ -63,7 +63,7 @@
                                     @foreach($criteria as $criterion)
                                         <tr>
                                             <td class="py-2 px-4 border-b">{{ $criterion->id }}</td>
-                                            <td class="py-2 px-4 border-b">{{ $criterion->event->name ?? 'N/A' }}</td>
+                                            <td class="py-2 px-4 border-b">{{ $criterion->event->event_name ?? 'N/A' }}</td>
                                             <td class="py-2 px-4 border-b">{{ $criterion->category->name ?? 'N/A' }}</td>
                                             <td class="py-2 px-4 border-b">{{ $criterion->name }}</td>
                                             <td class="py-2 px-4 border-b">{{ $criterion->description ?? 'N/A' }}</td>
