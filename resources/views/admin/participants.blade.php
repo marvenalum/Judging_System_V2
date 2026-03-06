@@ -29,8 +29,8 @@
                            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                             Pending
                         </a>
-                        <a href="{{ route('admin.participants.index', ['status' => 'submitted']) }}" 
-                           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $status === 'submitted' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                        <a href="{{ route('admin.participants.index', ['status' => 'reviewed']) }}" 
+                           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $status === 'reviewed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
                             Approved
                         </a>
                         <a href="{{ route('admin.participants.index', ['status' => 'draft']) }}" 
@@ -102,11 +102,11 @@
                                             <span class="@class([
                                                 'px-2 py-1 rounded-full text-xs font-semibold',
                                                 'bg-amber-100 text-amber-800' => $submission->status === 'pending',
-                                                'bg-green-100 text-green-800' => $submission->status === 'submitted',
+                                                'bg-green-100 text-green-800' => $submission->status === 'reviewed',
                                                 'bg-red-100 text-red-800' => $submission->status === 'draft',
-                                                'bg-blue-100 text-blue-800' => in_array($submission->status, ['under_review', 'reviewed'])
+                                                'bg-blue-100 text-blue-800' => $submission->status === 'under_review'
                                             ])">
-                                                {{ ucfirst($submission->status) }}
+                                                {{ $submission->status === 'reviewed' ? 'Approved' : ucfirst($submission->status) }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">

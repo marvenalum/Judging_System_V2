@@ -1,20 +1,9 @@
-# TODO: Fix Judge Criteria Display - COMPLETED
+# Task: Add Table for Scoring for List of Participants
 
-## Task: Display ALL criteria on judge side when added from admin side
+## Steps to Complete:
+- [x] 1. Create new view: participants-table.blade.php - A table that shows participants with their scores aggregated by criteria
+- [x] 2. Add new controller method: scoringParticipantsTable() in JudgeController
+- [x] 3. Add new route for participants scoring table
+- [x] 4. Update current scoring index to link to the new participants table view
+- [x] 5. Test the implementation
 
-### Changes Made:
-
-1. [x] Updated `app/Http/Controllers/CriteriaController.php`
-   - [x] Removed event assignment filter for judge criteria
-   - [x] Now shows ALL active criteria to judges regardless of event assignment
-
-2. [x] Updated `resources/views/judge/criteria/index.blade.php`
-   - [x] Updated description text to reflect new behavior
-   - [x] Updated empty state message to reflect new behavior
-   - [x] Removed references to `$assignedEventIds` variable
-
-### Implementation Summary:
-Modified the judge criteria to show ALL active criteria regardless of event assignment, as per user request.
-
-### Expected Outcome:
-When admin creates criteria with status 'active', it will display on the judge side for ALL judges.

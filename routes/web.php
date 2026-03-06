@@ -156,6 +156,11 @@ Route::prefix('judge')->middleware(['auth', 'verified', 'role:judge'])->group(fu
     Route::get('/manage-participants', [JudgeController::class, 'manageParticipants'])->name('judge.manage_participants.index');
     Route::get('/review-scores', [JudgeController::class, 'reviewScores'])->name('judge.review-scores');
     Route::get('/scoring', [JudgeController::class, 'reviewScores'])->name('judge.scoring.index');
+    Route::get('/scoring/by-category', [JudgeController::class, 'scoringByCategory'])->name('judge.scoring.category');
+    Route::get('/scoring/by-category/{category}/participant/{participant}', [JudgeController::class, 'scoreParticipantByCategory'])->name('judge.scoring.category.participant');
+    Route::post('/scoring/by-category/{category}/participant/{participant}', [JudgeController::class, 'storeScoreByCategory'])->name('judge.scoring.category.participant.store');
+    Route::get('/scoring/participants', [JudgeController::class, 'scoringParticipantsTable'])->name('judge.scoring.participants');
+    Route::get('/scores/by-category', [JudgeController::class, 'scoresByCategory'])->name('judge.scores.by-category');
     Route::get('/scoring/edit/{scoreId}', [JudgeController::class, 'scoringEdit'])->name('judge.scoring.edit');
     Route::put('/scoring/update/{scoreId}', [JudgeController::class, 'scoringUpdate'])->name('judge.scoring.update');
     Route::get('/profile', [JudgeController::class, 'profile'])->name('judge.profile');

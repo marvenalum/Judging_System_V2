@@ -22,9 +22,9 @@
 
         <style>
             :root {
-                --primary-gradient-start: #1e3a5f;
+                --primary-gradient-start: #000000;
                 --primary-gradient-end: #2d4a6f;
-                --accent-primary: #f59e0b;
+                --accent-primary: #f5ab0b;
                 --accent-secondary: #d97706;
                 --sidebar-width: 280px;
                 --topbar-height: 70px;
@@ -454,8 +454,8 @@
         <!-- Sidebar -->
         <aside class="judge-sidebar" id="judgeSidebar">
             <div class="sidebar-logo">
-                <h2>{{ config('app.name', 'Judge') }}</h2>
-                <p>Judging Panel</p>
+                <h2>JUDGE DASHBOARD</h2>
+              
             </div>
 
             <nav class="sidebar-nav">

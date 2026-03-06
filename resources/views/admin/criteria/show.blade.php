@@ -24,7 +24,7 @@
                         </div>
 
                         <div class="mb-4">
-                            <strong>Event:</strong> {{ $criteria->event->name ?? 'N/A' }}
+                            <strong>Event:</strong> {{ $criteria->event->event_name ?? 'N/A' }}
                         </div>
 
                         <div class="mb-4">

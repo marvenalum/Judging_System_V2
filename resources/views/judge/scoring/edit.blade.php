@@ -40,7 +40,7 @@
                             </div>
                             <div>
                                 <span class="text-gray-500 text-sm">Event:</span>
-                                <p class="font-medium">{{ $score->event->name ?? 'N/A' }}</p>
+                                <p class="font-medium">{{ $score->event->event_name ?? 'N/A' }}</p>
                             </div>
                             <div>
                                 <span class="text-gray-500 text-sm">Criteria:</span>
