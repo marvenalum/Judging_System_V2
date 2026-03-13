@@ -1,267 +1,481 @@
 <x-admin-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
-                <h2 class="text-xl font-semibold text-slate-900 tracking-tight">Manage Events</h2>
-                <p class="mt-0.5 text-sm text-slate-500">Oversee and manage all scheduled events</p>
-            </div>
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                {{ $events->count() }} {{ Str::plural('event', $events->count()) }}
-            </span>
-        </div>
-    </x-slot>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Events Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface-2: #1a1e28;
+    --border: #232736;
+    --border-hover: #2e3347;
+    --accent: #4f7cff;
+    --accent-dim: rgba(79,124,255,0.12);
+    --accent-glow: rgba(79,124,255,0.3);
+    --green: #22c887;
+    --green-dim: rgba(34,200,135,0.12);
+    --red: #ff5c6c;
+    --red-dim: rgba(255,92,108,0.1);
+    --text-primary: #e8eaf2;
+    --text-secondary: #8b90a4;
+    --text-muted: #4e5368;
+    --font: 'Sora', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
 
-    {{-- Inline styles for custom tokens not in Tailwind base --}}
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .events-root {
-            font-family: 'DM Sans', sans-serif;
-        }
-        .mono {
-            font-family: 'DM Mono', monospace;
-        }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
 
-        /* Subtle row shimmer on hover */
-        .event-row {
-            transition: background 0.15s ease;
-        }
-        .event-row:hover {
-            background: #f8fafc;
-        }
+  .page { max-width: 1100px; margin: 0 auto; }
 
-        /* Status pill */
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-        }
-        .status-pill::before {
-            content: '';
-            display: block;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-        }
-        .status-upcoming  { background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; }
-        .status-upcoming::before  { background:#3B82F6; box-shadow:0 0 0 2px #BFDBFE; }
-        .status-ongoing   { background:#F0FDF4; color:#15803D; border:1px solid #BBF7D0; }
-        .status-ongoing::before   { background:#22C55E; box-shadow:0 0 0 2px #BBF7D0; animation: pulse-dot 1.5s infinite; }
-        .status-completed { background:#F8FAFC; color:#64748B; border:1px solid #E2E8F0; }
-        .status-completed::before { background:#94A3B8; }
+  .topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    animation: fadeDown .45s ease both;
+  }
 
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
+  .topbar-left .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
 
-        /* Action buttons */
-        .action-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            transition: background 0.15s, color 0.15s, transform 0.1s;
-            color: #64748B;
-        }
-        .action-btn:hover { transform: translateY(-1px); }
-        .action-btn-view:hover  { background: #F0FDF4; color: #16A34A; }
-        .action-btn-edit:hover  { background: #EFF6FF; color: #2563EB; }
-        .action-btn-del:hover   { background: #FEF2F2; color: #DC2626; }
+  .topbar-left h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -.4px;
+  }
 
-        /* Avatar initial badge */
-        .avatar-badge {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.02em;
-            flex-shrink: 0;
-        }
+  .topbar-left p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
 
-        /* Subtle card border glow on success */
-        .toast-success {
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            border-left: 3px solid #22c55e;
-        }
-    </style>
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-    <div class="events-root py-8">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-5">
+  .count-badge {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 8px;
+  }
 
-            {{-- Toast --}}
-            @if(session('success'))
-                <div class="toast-success flex items-center gap-3 px-5 py-3.5 rounded-xl border border-green-200 shadow-sm">
-                    <svg class="w-4 h-4 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                    </svg>
-                    <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
-                </div>
-            @endif
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--font);
+    font-size: 13.5px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .2s, box-shadow .2s, transform .15s;
+    box-shadow: 0 0 0 0 var(--accent-glow);
+  }
 
-            {{-- Main Card --}}
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+  .btn-primary:hover {
+    background: #3f6cef;
+    box-shadow: 0 4px 20px var(--accent-glow);
+    transform: translateY(-1px);
+  }
 
-                {{-- Toolbar --}}
-                <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
-                    <div>
-                        <h3 class="text-base font-semibold text-slate-900 tracking-tight">All Events</h3>
-                        <p class="text-xs text-slate-400 mt-0.5">View, edit, and manage every event in your system</p>
-                    </div>
-                    <a href="{{ route('admin.event.create') }}"
-                       class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-700 text-white text-sm font-medium rounded-xl shadow-sm transition-all duration-150 hover:-translate-y-px">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                        </svg>
-                        New Event
-                    </a>
-                </div>
+  .btn-primary svg { width: 15px; height: 15px; flex-shrink: 0; }
 
-                {{-- Table --}}
-                <div class="overflow-x-auto">
-                    <table class="min-w-full">
-                        <thead>
-                            <tr class="border-b border-slate-100 bg-slate-50/60">
-                                <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Event</th>
-                                <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Description</th>
-                                <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Duration</th>
-                                <th class="px-6 py-3.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Status</th>
-                                <th class="px-6 py-3.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            @forelse($events as $event)
-                                @php
-                                    $colors = [
-                                        'bg-violet-100 text-violet-700',
-                                        'bg-sky-100 text-sky-700',
-                                        'bg-amber-100 text-amber-700',
-                                        'bg-rose-100 text-rose-700',
-                                        'bg-teal-100 text-teal-700',
-                                        'bg-indigo-100 text-indigo-700',
-                                    ];
-                                    $color = $colors[$loop->index % count($colors)];
-                                @endphp
-                                <tr class="event-row">
-                                    {{-- Event Name --}}
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center gap-3">
-                                            <div class="avatar-badge {{ $color }}">
-                                                {{ strtoupper(substr($event->event_name, 0, 2)) }}
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-semibold text-slate-900 leading-tight">{{ $event->event_name }}</div>
-                                                <div class="text-xs text-slate-400 mt-0.5 mono">{{ ucfirst($event->event_type) }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: fadeUp .5s ease both;
+  }
 
-                                    {{-- Description --}}
-                                    <td class="px-6 py-4 max-w-xs">
-                                        <p class="text-sm text-slate-500 leading-snug line-clamp-2">
-                                            {{ $event->event_description ? Str::limit($event->event_description, 70) : '—' }}
-                                        </p>
-                                    </td>
+  table { width: 100%; border-collapse: collapse; }
 
-                                    {{-- Dates --}}
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex flex-col gap-0.5">
-                                            <span class="mono text-xs text-slate-700 font-medium">{{ $event->start_date->format('d M Y') }}</span>
-                                            <span class="text-[10px] text-slate-400 flex items-center gap-1">
-                                                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                                                </svg>
-                                                {{ $event->end_date->format('d M Y') }}
-                                            </span>
-                                        </div>
-                                    </td>
+  thead tr {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+  }
 
-                                    {{-- Status --}}
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="status-pill status-{{ $event->event_status }}">
-                                            {{ ucfirst($event->event_status) }}
-                                        </span>
-                                    </td>
+  thead th {
+    padding: 13px 20px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
 
-                                    {{-- Actions --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-right">
-                                        <div class="inline-flex items-center gap-1">
-                                            {{-- View --}}
-                                            <a href="{{ route('admin.event.show', $event) }}"
-                                               class="action-btn action-btn-view bg-slate-50 border border-slate-200"
-                                               title="View">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                                </svg>
-                                            </a>
-                                            {{-- Edit --}}
-                                            <a href="{{ route('admin.event.edit', $event) }}"
-                                               class="action-btn action-btn-edit bg-slate-50 border border-slate-200"
-                                               title="Edit">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                </svg>
-                                            </a>
-                                            {{-- Delete --}}
-                                            <form method="POST" action="{{ route('admin.event.destroy', $event) }}" class="inline-block">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                        class="action-btn action-btn-del bg-slate-50 border border-slate-200"
-                                                        onclick="return confirm('Delete this event? This cannot be undone.')"
-                                                        title="Delete">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="px-6 py-20 text-center">
-                                        <div class="mx-auto w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-4">
-                                            <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                            </svg>
-                                        </div>
-                                        <h3 class="text-sm font-semibold text-slate-900 mb-1">No events yet</h3>
-                                        <p class="text-sm text-slate-400 mb-5">Create your first event to get started</p>
-                                        <a href="{{ route('admin.event.create') }}"
-                                           class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-700 text-white text-sm font-medium rounded-xl transition-all duration-150">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                                            </svg>
-                                            Create Event
-                                        </a>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+  thead th:last-child { text-align: right; }
 
-                {{-- Pagination --}}
-                @if($events instanceof \Illuminate\Pagination\LengthAwarePaginator && $events->hasPages())
-                    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
-                        {{ $events->links() }}
-                    </div>
-                @endif
-            </div>
-        </div>
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+    animation: fadeRow .35s ease both;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody tr:hover { background: rgba(255,255,255,.025); }
+
+  tbody tr:nth-child(1) { animation-delay: .05s; }
+  tbody tr:nth-child(2) { animation-delay: .1s; }
+  tbody tr:nth-child(3) { animation-delay: .15s; }
+  tbody tr:nth-child(4) { animation-delay: .2s; }
+  tbody tr:nth-child(5) { animation-delay: .25s; }
+  tbody tr:nth-child(6) { animation-delay: .3s; }
+  tbody tr:nth-child(7) { animation-delay: .35s; }
+  tbody tr:nth-child(8) { animation-delay: .4s; }
+
+  td {
+    padding: 16px 20px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    vertical-align: middle;
+  }
+
+  .cell-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .cell-desc {
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-secondary);
+  }
+
+  .date-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid rgba(79,124,255,.22);
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  .date-pill svg { width: 11px; height: 11px; opacity: .8; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .02em;
+  }
+
+  .badge::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .badge-upcoming {
+    background: rgba(79,124,255,.12);
+    color: var(--accent);
+    border: 1px solid rgba(79,124,255,.22);
+  }
+
+  .badge-upcoming::before { background: var(--accent); box-shadow: 0 0 5px rgba(79,124,255,.5); }
+
+  .badge-ongoing {
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid rgba(34,200,135,.2);
+  }
+
+  .badge-ongoing::before { background: var(--green); box-shadow: 0 0 5px var(--green); }
+
+  .badge-completed {
+    background: rgba(255,255,255,.04);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .badge-completed::before { background: var(--text-muted); }
+
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 7px;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+
+  .btn-edit {
+    color: var(--accent);
+    background: var(--accent-dim);
+    border-color: rgba(79,124,255,.2);
+  }
+
+  .btn-edit:hover {
+    background: rgba(79,124,255,.2);
+    border-color: rgba(79,124,255,.4);
+  }
+
+  .btn-delete {
+    color: var(--red);
+    background: var(--red-dim);
+    border-color: rgba(255,92,108,.18);
+  }
+
+  .btn-delete:hover {
+    background: rgba(255,92,108,.18);
+    border-color: rgba(255,92,108,.35);
+  }
+
+  .btn-icon svg { width: 12px; height: 12px; }
+
+  .empty {
+    padding: 64px 24px;
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  .empty svg {
+    width: 40px; height: 40px;
+    margin: 0 auto 16px;
+    opacity: .3;
+  }
+
+  .empty p { font-size: 14px; }
+
+  .card-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .pagination {
+    display: flex;
+    gap: 4px;
+  }
+
+  .page-btn {
+    padding: 5px 11px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+
+  .page-btn:hover, .page-btn.active {
+    background: var(--accent-dim);
+    border-color: rgba(79,124,255,.35);
+    color: var(--accent);
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeRow {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="eyebrow">Admin Panel</div>
+      <h1>Events Management</h1>
+      <p>Manage and organize your judging events</p>
     </div>
+    <div class="topbar-right">
+      <span class="count-badge">{{ $events->count() }} events</span>
+      <a href="{{ route('admin.event.create') }}" class="btn-primary">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/>
+        </svg>
+        Add New Event
+      </a>
+    </div>
+  </div>
+
+  <div class="card" style="width: 100%;">
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Dates</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          @forelse($events as $index => $event)
+          <tr style="animation-delay: {{ $index * 0.05 }}s">
+            <td>
+              <div class="cell-name">
+                <span class="dot" style="background:{{ $event->event_status === 'ongoing' ? '#22c887' : ($event->event_status === 'upcoming' ? '#4f7cff' : '#4e5368') }};box-shadow:0 0 6px {{ $event->event_status === 'ongoing' ? '#22c88788' : ($event->event_status === 'upcoming' ? '#4f7cff88' : '#4e536888') }};"></span>
+                {{ $event->event_name }}
+              </div>
+            </td>
+            <td><div class="cell-desc" title="{{ $event->event_description }}">{{ $event->event_description ?? 'No description' }}</div></td>
+            <td>
+              <span class="date-pill">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                {{ $event->start_date->format('M d') }} - {{ $event->end_date->format('M d') }}
+              </span>
+            </td>
+            <td>
+              @if($event->event_status === 'ongoing')
+                <span class="badge badge-ongoing">Ongoing</span>
+              @elseif($event->event_status === 'upcoming')
+                <span class="badge badge-upcoming">Upcoming</span>
+              @else
+                <span class="badge badge-completed">Completed</span>
+              @endif
+            </td>
+            <td>
+              <div class="actions">
+                <a href="{{ route('admin.event.edit', $event->id) }}" class="btn-icon btn-edit">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                  Edit
+                </a>
+                <form method="POST" action="{{ route('admin.event.destroy', $event->id) }}" style="display:inline;">
+                  @csrf
+                  @method('DELETE')
+                  <button type="submit" class="btn-icon btn-delete" onclick="return confirm('Are you sure you want to delete this event?')">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    Delete
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          @empty
+          <tr>
+            <td colspan="5">
+              <div class="empty">
+                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+                <p>No events found. <a href="{{ route('admin.event.create') }}" style="color: var(--accent); text-decoration: none;">Create one</a></p>
+              </div>
+            </td>
+          </tr>
+          @endforelse
+
+        </tbody>
+      </table>
+    </div>
+    @if($events->hasPages())
+    <div class="card-footer">
+      <span>Showing <strong style="color:var(--text-secondary)">{{ $events->firstItem() ?? 0 }}</strong> to <strong style="color:var(--text-secondary)">{{ $events->lastItem() }}</strong> of <strong style="color:var(--text-secondary)">{{ $events->total() }}</strong> events</span>
+      <div class="pagination">
+        @if($events->onFirstPage())
+          <button class="page-btn" disabled>‹</button>
+        @else
+          <a href="{{ $events->previousPageUrl() }}" class="page-btn">‹</a>
+        @endif
+        @foreach($events->getUrlRange(1, $events->lastPage()) as $page => $url)
+          @if($page == $events->currentPage())
+            <button class="page-btn active">{{ $page }}</button>
+          @else
+            <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+          @endif
+        @endforeach
+        @if($events->hasMorePages())
+          <a href="{{ $events->nextPageUrl() }}" class="page-btn">›</a>
+        @else
+          <button class="page-btn" disabled>›</button>
+        @endif
+      </div>
+    </div>
+    @endif
+  </div>
+
+</div>
+
+</body>
+</html>
 </x-admin-layout>

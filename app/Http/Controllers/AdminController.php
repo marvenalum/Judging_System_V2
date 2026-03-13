@@ -129,4 +129,38 @@ class AdminController extends Controller
         return redirect()->route('admin.participants.index')
             ->with('success', 'Participant declined successfully.');
     }
+
+    /**
+     * Show edit form for participant submission.
+     */
+    public function editParticipant(Submission $submission) {
+        $submission->load(['participant', 'event']);
+        return view('admin.participants.edit', compact('submission'));
+    }
+
+    /**
+     * Update participant submission.
+     */
+    public function updateParticipant(Request $request, Submission $submission) {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'status' => 'required|in:pending,reviewed,draft',
+        ]);
+
+        $submission->update($validated);
+
+        return redirect()->route('admin.participants.index')
+            ->with('success', 'Submission updated successfully.');
+    }
+
+    /**
+     * Delete participant submission.
+     */
+    public function destroyParticipant(Submission $submission) {
+        $submission->delete();
+
+        return redirect()->route('admin.participants.index')
+            ->with('success', 'Submission deleted successfully.');
+    }
 }
