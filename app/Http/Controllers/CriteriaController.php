@@ -61,15 +61,13 @@ class CriteriaController extends Controller
             return redirect()->route('login')->with('error', 'Please login to access this page.');
         }
         
-        // Verify judge is assigned to this event
-        $isAssignedToEvent = Auth::user()->judgeAssignments()
-            ->where('event_id', $criteria->event_id)
-            ->exists();
-            
-        if (!$isAssignedToEvent) {
-            return redirect()->route('judge.criteria.index')
-                ->with('error', 'You are not assigned to the event for this criterion.');
-        }
+        // Assignment check removed - allow scoring any active criteria
+        \Illuminate\Support\Facades\Log::info('Judge scoring access - createScore', [
+            'judge_id' => Auth::id(), 
+            'criteria_id' => $criteria->id,
+            'event_id' => $criteria->event_id,
+            'assigned_event_ids' => Auth::user()->judgeAssignments()->pluck('event_id')->toArray()
+        ]);
         
         // Verify criteria is active
         if ($criteria->status !== 'active') {
@@ -83,7 +81,8 @@ class CriteriaController extends Controller
         // Get participants who have submissions in this event
         $participants = User::where('role', 'participant')
             ->whereHas('submissions', function ($query) use ($eventId) {
-                $query->where('event_id', $eventId)->where('status', 'approved');
+                $query->where('event_id', $eventId)
+                      ->where('status', 'reviewed');
             })
             ->get();
 
@@ -100,15 +99,13 @@ class CriteriaController extends Controller
             return redirect()->route('login')->with('error', 'Please login to access this page.');
         }
         
-        // Verify judge is assigned to this event
-        $isAssignedToEvent = Auth::user()->judgeAssignments()
-            ->where('event_id', $criteria->event_id)
-            ->exists();
-            
-        if (!$isAssignedToEvent) {
-            return redirect()->route('judge.criteria.index')
-                ->with('error', 'You are not assigned to the event for this criterion.');
-        }
+        // Assignment check removed - allow scoring any active criteria
+        \Illuminate\Support\Facades\Log::info('Judge scoring access - storeScore', [
+            'judge_id' => Auth::id(), 
+            'criteria_id' => $criteria->id,
+            'event_id' => $criteria->event_id,
+            'assigned_event_ids' => Auth::user()->judgeAssignments()->pluck('event_id')->toArray()
+        ]);
         
         // Verify criteria is active
         if ($criteria->status !== 'active') {

@@ -106,6 +106,11 @@ Route::prefix('admin')->middleware(['auth', 'verified', 'role:admin'])->group(fu
     Route::get('/participants', [AdminController::class, 'participants'])->name('admin.participants.index');
     Route::post('/participants/{submission}/approve', [AdminController::class, 'approveParticipant'])->name('admin.participants.approve');
     Route::post('/participants/{submission}/decline', [AdminController::class, 'declineParticipant'])->name('admin.participants.decline');
+    
+    // Participant submission CRUD
+    Route::get('/participants/{submission}/edit', [AdminController::class, 'editParticipant'])->name('admin.participants.edit');
+    Route::patch('/participants/{submission}', [AdminController::class, 'updateParticipant'])->name('admin.participants.update');
+    Route::delete('/participants/{submission}', [AdminController::class, 'destroyParticipant'])->name('admin.participants.destroy');
 });
 
 // Participant Dashboard Routes
@@ -161,6 +166,11 @@ Route::prefix('judge')->middleware(['auth', 'verified', 'role:judge'])->group(fu
     Route::post('/scoring/by-category/{category}/participant/{participant}', [JudgeController::class, 'storeScoreByCategory'])->name('judge.scoring.category.participant.store');
     Route::get('/scoring/participants', [JudgeController::class, 'scoringParticipantsTable'])->name('judge.scoring.participants');
     Route::get('/scores/by-category', [JudgeController::class, 'scoresByCategory'])->name('judge.scores.by-category');
+    
+    // Bulk scoring routes
+    Route::get('/scoring/bulk/{category}', [JudgeController::class, 'bulkScoreCategory'])->name('judge.scoring.bulk');
+    Route::post('/scoring/bulk/{category}', [JudgeController::class, 'storeBulkScores'])->name('judge.scoring.bulk.store');
+    
     Route::get('/scoring/edit/{scoreId}', [JudgeController::class, 'scoringEdit'])->name('judge.scoring.edit');
     Route::put('/scoring/update/{scoreId}', [JudgeController::class, 'scoringUpdate'])->name('judge.scoring.update');
     Route::get('/profile', [JudgeController::class, 'profile'])->name('judge.profile');
