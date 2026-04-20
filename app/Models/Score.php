@@ -16,29 +16,8 @@ class Score extends Model
         'status',
     ];
 
-    /**
-     * Get the judge's name (Judge ID)
-     */
-    public function getJudgeIdAttribute()
-    {
-        return $this->judge_id;
-    }
-
-    /**
-     * Get the participant's ID
-     */
-    public function getParticipantIdAttribute()
-    {
-        return $this->participant_id;
-    }
-
-    /**
-     * Get the event's ID
-     */
-    public function getEventIdAttribute()
-    {
-        return $this->event_id;
-    }
+    // Removed redundant getJudgeIdAttribute() - use $score->judge_id directly or $score->judge()->id
+    // Use getDisplayJudgeIdentifier() for proper display with anonymous judging support
 
     /**
      * Get the category ID through criteria relationship
@@ -104,7 +83,7 @@ class Score extends Model
     }
 
     /**
-     * Get the judge's name
+     * Get the judge who gave this score.
      */
     public function judge()
     {
@@ -112,34 +91,26 @@ class Score extends Model
     }
 
     /**
-     * Get the participant (user)
-     */
-    public function participant()
-    {
-        return $this->belongsTo(User::class, 'participant_id');
-    }
-
-    /**
-     * Get the event
-     */
-    public function event()
-    {
-        return $this->belongsTo(Event::class);
-    }
-
-    /**
-     * Get the criteria
+     * Get the criteria for this score.
      */
     public function criteria()
     {
-        return $this->belongsTo(Criteria::class);
+        return $this->belongsTo(\App\Models\Criteria::class);
     }
 
     /**
-     * Get the category through criteria relationship
+     * Get the event for this score.
      */
-    public function category()
+    public function event()
     {
-        return $this->hasOneThrough(Category::class, Criteria::class);
+        return $this->belongsTo(\App\Models\Event::class);
+    }
+
+    /**
+     * Get the participant who received this score.
+     */
+    public function participant()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'participant_id');
     }
 }

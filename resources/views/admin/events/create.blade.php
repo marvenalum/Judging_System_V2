@@ -70,6 +70,29 @@
                                 </select>
                                 <x-input-error :messages="$errors->get('event_status')" class="mt-2" />
                             </div>
+
+                            <!-- Anonymous Judging -->
+                            <div class="md:col-span-2">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="anonymous_judging" name="anonymous_judging" value="1"
+                                           {{ old('anonymous_judging') ? 'checked' : '' }}
+                                           class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                    <label for="anonymous_judging" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                        Enable Anonymous Judging
+                                    </label>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">When enabled, judge identities will be hidden from participants and participant names will be masked for judges.</p>
+                            </div>
+
+                            <!-- Anonymity Level (shown when anonymous judging is enabled) -->
+                            <div class="md:col-span-2" id="anonymity-level-container" style="display: none;">
+                                <x-input-label for="anonymity_level" :value="__('Anonymity Level')" />
+                                <select id="anonymity_level" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" name="anonymity_level">
+                                    <option value="full" {{ old('anonymity_level', 'full') == 'full' ? 'selected' : '' }}>Full Anonymity</option>
+                                    <option value="partial" {{ old('anonymity_level') == 'partial' ? 'selected' : '' }}>Partial Anonymity</option>
+                                </select>
+                                <p class="mt-1 text-xs text-gray-500">Full: Both judges and participants are anonymous. Partial: Only judges are anonymous to participants.</p>
+                            </div>
                         </div>
 
                         <div class="flex items-center justify-end mt-8 space-x-4">
@@ -91,4 +114,22 @@
             </div>
         </div>
     </div>
-</x-admin-layout>
+    <script>
+        document.getElementById('anonymous_judging').addEventListener('change', function() {
+            const container = document.getElementById('anonymity-level-container');
+            if (this.checked) {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        });
+
+        // Check on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkbox = document.getElementById('anonymous_judging');
+            const container = document.getElementById('anonymity-level-container');
+            if (checkbox.checked) {
+                container.style.display = 'block';
+            }
+        });
+    </script></x-admin-layout>

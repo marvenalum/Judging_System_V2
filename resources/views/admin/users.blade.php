@@ -411,10 +411,23 @@
             </td>
             <td>
               <div class="actions">
+                <!-- Toggle Status Button -->
+                <form method="POST" action="{{ route('admin.users.toggleStatus', $user->id) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to {{ $user->status === 'active' ? 'deactivate' : 'activate' }} this user?');">
+                  @csrf
+                  @method('PATCH')
+                  <button type="submit" class="btn-icon {{ $user->status === 'active' ? 'btn-delete' : 'btn-edit' }}">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:12px;height:12px;">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    {{ $user->status === 'active' ? 'Deactivate' : 'Activate' }}
+                  </button>
+                </form>
+                <!-- Edit Button -->
                 <a href="{{ route('admin.users.edit', $user->id) }}" class="btn-icon btn-edit">
                   <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                   Edit
                 </a>
+                <!-- Delete Button -->
                 <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" style="display:inline;">
                   @csrf
                   @method('DELETE')

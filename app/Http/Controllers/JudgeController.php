@@ -82,44 +82,70 @@ class JudgeController extends Controller
     }
 
     public function manageParticipants(Request $request) {
+        Log::info('=== JUDGE MANAGE PARTICIPANTS DEBUG ===');
+        Log::info('Judge ID: ' . Auth::id() . ', Role: ' . Auth::user()->role);
+        
         /** @var User $authUser */
         $authUser = Auth::user();
         $assignedEventIds = $authUser->judgeAssignments()->pluck('event_id');
+        
+        Log::info('Assigned Event IDs: ' . $assignedEventIds->toJson());
+        Log::info('Assigned Events Count: ' . $assignedEventIds->count());
+        
+        // DEBUG: Total submissions in assigned events (any status)
+        $totalSubsAnyStatus = Submission::whereIn('event_id', $assignedEventIds)->count();
+        Log::info('Total submissions in assigned events (any status): ' . $totalSubsAnyStatus);
+        
+        $query = Submission::with(['participant', 'event'])
+            ->whereIn('event_id', $assignedEventIds);
 
-        $query = User::where('role', 'participant')
-            ->with(['receivedScores', 'submissions.event'])
-            ->withCount(['submissions as approved_submissions_count' => function ($q) {
-                $q->where('status', 'reviewed');
-            }, 'submissions as pending_submissions_count' => function ($q) {
-                $q->whereIn('status', ['pending', 'draft', 'submitted', 'under_review']);
-            }]);
+        // Relaxed filter for debugging - show ALL submissions initially
+        // $query->where('status', 'reviewed');  // Temporarily commented
+        // $query->whereHas('participant', function ($q) {
+        //     $q->where('status', 'active');
+        // });
 
-        // Base filter: only approved participants from assigned events
-        $query->whereHas('submissions', function ($q) use ($assignedEventIds) {
-            $q->whereIn('event_id', $assignedEventIds)->where('status', 'reviewed');
-        });
-
-        // Search filter
+        // Search filter: participant name/email or submission title/description
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                  ->orWhere('email', 'LIKE', "%{$search}%");
+                $q->whereHas('participant', function ($participantQuery) use ($search) {
+                    $participantQuery->where('name', 'LIKE', "%{$search}%")
+                        ->orWhere('email', 'LIKE', "%{$search}%");
+                })->orWhere('title', 'LIKE', "%{$search}%")
+                  ->orWhere('description', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Search filter: participant name/email or submission title/description
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('participant', function ($participantQuery) use ($search) {
+                    $participantQuery->where('name', 'LIKE', "%{$search}%")
+                        ->orWhere('email', 'LIKE', "%{$search}%");
+                })->orWhere('title', 'LIKE', "%{$search}%")
+                  ->orWhere('description', 'LIKE', "%{$search}%");
             });
         }
 
         // Event filter
         if ($eventId = $request->get('event_id')) {
-            $query->whereHas('submissions', function ($q) use ($eventId) {
-                $q->where('event_id', $eventId)->where('status', 'reviewed');
-            });
+            $query->where('event_id', $eventId);
         }
-
-        $participants = $query->paginate(15)->appends($request->only(['search', 'event_id']));
+        
+        // DEBUG LOGGING
+        Log::info('Final Query SQL: ' . $query->toSql());
+        Log::info('Final Query Bindings: ' . json_encode($query->getBindings()));
+        Log::info('Final Query Count Before Paginate: ' . $query->count());
+        
+        $submissions = $query->paginate(15)->appends($request->only(['search', 'event_id']));
+        
+        Log::info('Final Results Count: ' . $submissions->total());
+        Log::info('=== END DEBUG ===');
 
         // Get assigned events for filter dropdown
         $events = Event::whereIn('id', $assignedEventIds)->get();
 
-        return view('judge.manage_participants.index', compact('participants', 'events', 'eventId', 'search'));
+        return view('judge.manage_participants.index', compact('submissions', 'events', 'eventId', 'search'));
     }
 
 public function reviewScores(Request $request) {
@@ -127,52 +153,203 @@ public function reviewScores(Request $request) {
         $user = Auth::user();
         $judgeId = $user->id;
         
-        // Base query with optimized eager loading
-        $query = Score::with([
-                'participant:id,name',
-                'event:id,event_name', 
-                'criteria:id,name,max_score,category_id',
-                'criteria.category:id,name'
-            ])
-            ->where('judge_id', $judgeId);
+        $assignedEventIds = $user->judgeAssignments()->pluck('event_id');
         
-        // Filters
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('event_id')) {
-            $query->where('event_id', $request->event_id);
-        }
-        if ($request->filled('category_id')) {
-            $query->whereHas('criteria.category', function($q) use ($request) {
-                $q->where('id', $request->category_id);
+        // Base participant query: approved participants (reviewed submissions) from assigned events
+        $query = User::where('role', 'participant')
+            ->whereHas('submissions', function ($q) use ($assignedEventIds) {
+                $q->whereIn('event_id', $assignedEventIds)->where('status', 'reviewed');
+            })
+            ->with(['submissions.event', 'receivedScores.criteria.category.event'])
+            ->select('id', 'name', 'email');
+        
+        // Search filter
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%");
             });
         }
         
-        $scores = $query->paginate(15)->appends($request->only(['status', 'event_id', 'category_id']));
+        // Event filter
+        if ($eventId = $request->get('event_id')) {
+            $query->whereHas('submissions', function ($q) use ($eventId) {
+                $q->where('event_id', $eventId)->where('status', 'reviewed');
+            });
+        }
         
-        // Stats
-        $stats = [
-            'total' => Score::where('judge_id', $judgeId)->count(),
-            'submitted' => Score::where('judge_id', $judgeId)->where('status', 'submitted')->count(),
-            'draft' => Score::where('judge_id', $judgeId)->where('status', 'draft')->count(),
-        ];
+        // Category filter (via criteria with submissions)
+        if ($categoryId = $request->get('category_id')) {
+            $query->whereHas('receivedScores.criteria.category', function ($q) use ($categoryId) {
+                $q->where('id', $categoryId);
+            });
+        }
         
-        // Assigned data
-        $assignedEventIds = $user->judgeAssignments()->pluck('event_id');
-        $assignedEvents = Event::whereIn('id', $assignedEventIds)->get(['id', 'event_name']);
-        $assignedCategories = Category::whereIn('event_id', $assignedEventIds)->get(['id', 'name']);
+        $participants = $query->paginate(15)->appends($request->only(['search', 'event_id', 'category_id']));
         
-        $availableCriteria = Criteria::with(['event:id,event_name', 'category:id,name'])
+        $participantIds = $participants->pluck('id');
+        
+        // Get ALL criteria from assigned events (for table columns)
+        $allCriteria = Criteria::with(['category:id,name', 'event:id,event_name'])
             ->whereIn('event_id', $assignedEventIds)
             ->where('status', 'active')
             ->get();
         
-        if ($availableCriteria->isEmpty()) {
-Log::warning('No available criteria for reviewScores', ['judge_id' => $user->id, 'event_ids' => $assignedEventIds]);
+        // Get judge's scores for these participants to compute scoreData
+        $scores = Score::with(['criteria', 'criteria.category'])
+            ->where('judge_id', $judgeId)
+            ->whereIn('participant_id', $participantIds)
+            ->get();
+        
+        // Group scores to compute scoreData like scoringParticipantsTable
+        $scoresByParticipant = [];
+        foreach ($scores as $score) {
+            $pid = $score->participant_id;
+            $cid = $score->criteria->category_id ?? 'uncategorized';
+            
+            if (!isset($scoresByParticipant[$pid])) {
+                $scoresByParticipant[$pid] = [];
+            }
+            if (!isset($scoresByParticipant[$pid][$cid])) {
+                $scoresByParticipant[$pid][$cid] = [
+                    'event_id' => $score->event_id,
+                    'event_name' => $score->criteria->event->event_name ?? 'N/A',
+                    'category_id' => $cid,
+                    'category_name' => $score->criteria->category->name ?? 'Uncategorized',
+                    'criteria_scores' => [],
+                    'total_score' => 0,
+                    'max_possible' => 0,
+                    'overall_status' => null,
+                ];
+            }
+            
+            $critId = $score->criteria_id;
+            $scoresByParticipant[$pid][$cid]['criteria_scores'][$critId] = [
+                'score' => $score->score,
+                'status' => $score->status,
+                'max_score' => $score->criteria->max_score ?? 100,
+            ];
+            
+            $scoresByParticipant[$pid][$cid]['total_score'] += $score->score;
+            $scoresByParticipant[$pid][$cid]['max_possible'] += ($score->criteria->max_score ?? 100);
+            
+            // Status priority: submitted > pending > draft
+            $status = $scoresByParticipant[$pid][$cid]['overall_status'];
+            if ($score->status === 'submitted' || $status === 'submitted') {
+                $scoresByParticipant[$pid][$cid]['overall_status'] = 'submitted';
+            } elseif ($score->status === 'pending' || $status === 'pending') {
+                $scoresByParticipant[$pid][$cid]['overall_status'] = 'pending';
+            } elseif ($score->status === 'draft' && !$status) {
+                $scoresByParticipant[$pid][$cid]['overall_status'] = 'draft';
+            }
         }
         
-        return view('judge.review-scores', compact('scores', 'availableCriteria', 'assignedEvents', 'assignedCategories', 'stats'));
+        // Attach to participants
+        foreach ($participants as $participant) {
+            $participant->scoreData = $scoresByParticipant[$participant->id] ?? [];
+        }
+        
+// Stats - Enhanced with totals
+        $stats = [
+            'total_participants' => $query->count(),
+            'total_scores' => Score::where('judge_id', $judgeId)->count(),
+            'submitted_scores' => Score::where('judge_id', $judgeId)->where('status', 'submitted')->count(),
+            'pending_scores' => Score::where('judge_id', $judgeId)->where('status', 'pending')->count(),
+            'avg_score' => Score::where('judge_id', $judgeId)->avg('score') ?? 0,
+        ];
+
+        // Compute participant totals across ALL categories (grand totals)
+        $participantTotalsQuery = Score::selectRaw('participant_id, SUM(score) as grand_total_score, COUNT(DISTINCT criteria_id) as total_criteria_scored')
+            ->where('judge_id', $judgeId)
+            ->groupBy('participant_id')
+            ->orderByDesc('grand_total_score');
+
+        // Apply same filters as scores query
+        if ($search = $request->get('search')) {
+            $participantTotalsQuery->whereHas('participant', function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%");
+            });
+        }
+        if ($eventId = $request->get('event_id')) {
+            $participantTotalsQuery->where('event_id', $eventId);
+        }
+        if ($categoryId = $request->get('category_id')) {
+            $participantTotalsQuery->whereHas('criteria.category', function ($q) use ($categoryId) {
+                $q->where('id', $categoryId);
+            });
+        }
+
+        $participantTotals = $participantTotalsQuery->get()->map(function ($row) {
+            $participant = User::select('id', 'name', 'email')->find($row->participant_id);
+            // Get total possible score for percentage calculation
+            $totalPossibleQuery = Score::selectRaw('SUM(criteria.max_score) as total_max')
+                ->join('criteria', 'scores.criteria_id', '=', 'criteria.id')
+                ->where('scores.judge_id', $row->judge_id ?? auth()->id())
+                ->where('scores.participant_id', $row->participant_id)
+                ->groupBy('scores.participant_id');
+            
+            if (request('event_id')) {
+                $totalPossibleQuery->where('scores.event_id', request('event_id'));
+            }
+            if (request('category_id')) {
+                $totalPossibleQuery->whereHas('criteria.category', function ($q) {
+                    $q->where('id', request('category_id'));
+                });
+            }
+            
+            $totalPossible = $totalPossibleQuery->value('total_max') ?? 1;
+            $percentage = $totalPossible > 0 ? round(($row->grand_total_score / $totalPossible) * 100, 1) : 0;
+            
+            return [
+                'participant' => $participant,
+                'grand_total_score' => $row->grand_total_score,
+                'total_criteria_scored' => $row->total_criteria_scored,
+                'percentage' => $percentage,
+                'total_possible' => $totalPossible,
+            ];
+        });
+
+        // Top 5 performers
+        $topPerformers = $participantTotals->sortByDesc('grand_total_score')->take(5);
+        
+        $assignedEvents = Event::whereIn('id', $assignedEventIds)->get(['id', 'event_name']);
+        $assignedCategories = Category::whereIn('event_id', $assignedEventIds)->get(['id', 'name']);
+        
+        // Get paginated scores for this judge (matching view expectations)
+        $scoreQuery = Score::with(['participant', 'event', 'criteria', 'criteria.category'])
+            ->where('judge_id', $judgeId);
+        
+        // Apply same filters as before (search -> participant name)
+        if ($search = $request->get('search')) {
+            $scoreQuery->whereHas('participant', function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%");
+            });
+        }
+        
+        if ($eventId = $request->get('event_id')) {
+            $scoreQuery->where('event_id', $eventId);
+        }
+        
+        if ($categoryId = $request->get('category_id')) {
+            $scoreQuery->whereHas('criteria.category', function ($q) use ($categoryId) {
+                $q->where('id', $categoryId);
+            });
+        }
+        
+        $scores = $scoreQuery->orderBy('updated_at', 'desc')->paginate(15)->appends($request->only(['search', 'event_id', 'category_id']));
+        
+        $assignedEvents = Event::whereIn('id', $assignedEventIds)->get(['id', 'event_name']);
+        $assignedCategories = Category::whereIn('event_id', $assignedEventIds)->get(['id', 'name']);
+        $categories = $assignedCategories; // for filter dropdown
+        
+        return view('judge.scoring.index', compact(
+            'scores', 'categories', 'assignedEvents', 'assignedCategories', 
+            'stats', 'participantTotals', 'topPerformers'
+        ));
+        
+        return view('judge.scoring.index', compact('scores', 'categories', 'assignedEvents', 'assignedCategories'));
     }
 
     public function scoringEdit($scoreId = null) {
@@ -217,7 +394,25 @@ Log::warning('No available criteria for reviewScores', ['judge_id' => $user->id,
             'status' => 'required|in:draft,pending,submitted',
         ]);
 
+        // Update the score first
         $score->update($validated);
+
+        // Validate the score using the ScoringValidationService
+        $validationErrors = \App\Services\ScoringValidationService::validateScore($score);
+
+        if (!empty($validationErrors)) {
+            // Create validation records for errors
+            foreach ($validationErrors as $error) {
+                \App\Models\ScoreValidation::create([
+                    'score_id' => $score->id,
+                    'validation_type' => 'range',
+                    'is_valid' => false,
+                    'message' => $error,
+                ]);
+            }
+
+            return redirect()->back()->with('error', 'Score validation failed: ' . implode(', ', $validationErrors));
+        }
 
         return redirect()->route('judge.review-scores')->with('success', 'Score updated successfully.');
     }
@@ -261,14 +456,21 @@ Log::warning('No available criteria for reviewScores', ['judge_id' => $user->id,
         /** @var User $user */
         $user = Auth::user();
         
+        Log::info('=== JUDGE SCORING CATEGORY DEBUG ===', [
+            'judge_id' => $user->id,
+            'method' => __METHOD__
+        ]);
+        
         // Get assigned event IDs
         $assignedEventIds = $user->judgeAssignments()->pluck('event_id');
+        Log::info('Assigned Event IDs', ['count' => $assignedEventIds->count(), 'ids' => $assignedEventIds]);
         
         // Get categories from assigned events
         $categories = \App\Models\Category::whereIn('event_id', $assignedEventIds)
             ->where('status', 'active')
             ->with('event')
             ->get();
+        Log::info('Loaded Categories', ['count' => $categories->count()]);
         
         $selectedCategoryId = $request->query('category_id');
         $selectedCategory = null;
@@ -277,39 +479,86 @@ Log::warning('No available criteria for reviewScores', ['judge_id' => $user->id,
         
         if ($selectedCategoryId) {
             $selectedCategory = \App\Models\Category::with('event')->find($selectedCategoryId);
+            Log::info('Selected Category', ['id' => $selectedCategoryId, 'found' => $selectedCategory ? 'yes' : 'no']);
             
             if ($selectedCategory) {
                 // Get criteria for this category
-                $criteria = \App\Models\Criteria::with(['category', 'event'])
-                    ->where('category_id', $selectedCategoryId)
+                $criteriaIds = \App\Models\Criteria::where('category_id', $selectedCategoryId)
                     ->where('status', 'active')
+                    ->pluck('id');
+                $criteria = \App\Models\Criteria::with(['category', 'event'])
+                    ->whereIn('id', $criteriaIds)
                     ->get();
-                
-                if ($criteria->isEmpty()) {
-Log::warning('No active criteria found for category ID: ' . $selectedCategoryId, ['judge_id' => $user->id]);
-                }
+                Log::info('Category Criteria', ['count' => $criteria->count(), 'ids' => $criteriaIds]);
                 
                 // Get participants who have submissions in the event associated with this category
                 $eventId = $selectedCategory->event_id;
-                $participants = User::where('role', 'participant')
+                $participantsQuery = User::where('role', 'participant')
                     ->whereHas('submissions', function ($query) use ($eventId) {
-$query->where('event_id', $eventId)->where('status', 'reviewed');
+                        $query->where('event_id', $eventId)
+                              ->whereIn('status', ['reviewed', 'approved']); // More flexible
                     })
-                    ->with(['receivedScores' => function ($query) use ($selectedCategoryId) {
-                        $query->whereHas('criteria', function ($q) use ($selectedCategoryId) {
-                            $q->where('category_id', $selectedCategoryId);
-                        });
-                    }])
-                    ->get();
+                    ->with([
+                        'participantProfile',
+                        'receivedScores' => function ($query) use ($user, $criteriaIds) {
+                            $query->where('judge_id', $user->id)
+                                  ->whereIn('criteria_id', $criteriaIds);
+                        },
+                        'receivedScores.criteria'
+                    ])
+                    ->orderBy('name');
+                
+                $participants = $participantsQuery->get();
+                Log::info('Loaded Participants', [
+                    'count' => $participants->count(),
+                    'event_id' => $eventId,
+                    'query_sql' => $participantsQuery->toSql()
+                ]);
+                
+                // Pre-calculate progress data for each participant
+                foreach ($participants as $participant) {
+                    $participantScores = $participant->receivedScores;
+                    $completedCriteria = $participantScores->count();
+                    $participant->scoring_progress = [
+                        'completed' => $completedCriteria,
+                        'total' => $criteriaIds->count(),
+                        'percentage' => $criteriaIds->count() > 0 ? round(($completedCriteria / $criteriaIds->count()) * 100) : 0,
+                        'total_score' => $participantScores->sum('score'),
+                        'avg_score' => $participantScores->avg('score')
+                    ];
+                }
             }
         }
+
+        // Stats calculations
+        $judgeAssignmentsCount = $user->judgeAssignments()->count();
+        $assignedEventsCount = $user->judgeAssignments()->distinct('event_id')->count('event_id');
+        
+        // Category-specific scoring progress (only when category selected)
+        $scoringProgressPercent = 0;
+        if ($selectedCategory && $participants->count() > 0 && isset($criteriaIds)) {
+            $completedParticipants = $participants->filter(fn($p) => 
+                $p->scoring_progress['completed'] >= $criteriaIds->count()
+            )->count();
+            $scoringProgressPercent = round(($completedParticipants / $participants->count()) * 100);
+        }
+        
+        Log::info('Final Data Summary', [
+            'categories_count' => $categories->count(),
+            'participants_count' => $participants->count(),
+            'criteria_count' => $criteria->count(),
+            'scoring_progress_percent' => $scoringProgressPercent
+        ]);
         
         return view('judge.scoring.category', compact(
             'categories',
             'selectedCategory',
             'participants',
-            'criteria'
-        ));
+            'criteria',
+            'judgeAssignmentsCount',
+            'assignedEventsCount',
+            'scoringProgressPercent'
+        )); // Added scoringProgressPercent
     }
 
 /**
@@ -393,13 +642,24 @@ Log::warning('No active criteria found for category ID: ' . $category->id . ', J
         
         // Verify participant has submission in this event
         $hasSubmission = $participant->submissions()
-->where('event_id', $category->event_id)
+            ->where('event_id', $category->event_id)
             ->where('status', 'reviewed')
             ->exists();
         
+        // Verify judge is assigned to this participant for this event
+        $isAssignedToParticipant = $user->judgeParticipantAssignments()
+            ->where('event_id', $category->event_id)
+            ->where('participant_id', $participant->id)
+            ->exists();
+            
+        if (!$isAssignedToParticipant) {
+            return redirect()->route('judge.scoring.category')
+                ->with('error', 'You are not assigned to score this participant in this event. Contact admin for assignment.');
+        }
+        
         if (!$hasSubmission) {
             return redirect()->route('judge.scoring.category')
-                ->with('error', 'This participant does not have a submission in this event.');
+                ->with('error', 'This participant does not have a reviewed submission in this event.');
         }
         
         // Get existing scores for this participant in this category
@@ -428,6 +688,17 @@ Log::warning('No active criteria found for category ID: ' . $category->id . ', J
         if (!$isAssignedToEvent) {
             return redirect()->route('judge.scoring.category')
                 ->with('error', 'You are not assigned to the event for this category.');
+        }
+        
+        // Verify judge is assigned to this participant
+        $isAssignedToParticipant = $user->judgeParticipantAssignments()
+            ->where('event_id', $category->event_id)
+            ->where('participant_id', $participant->id)
+            ->exists();
+            
+        if (!$isAssignedToParticipant) {
+            return redirect()->route('judge.scoring.category')
+                ->with('error', 'You are not assigned to score this participant. Contact admin.');
         }
         
         // Get criteria for this category
@@ -474,8 +745,9 @@ Log::warning('No active criteria for category save, category: ' . $category->id)
                     'comments' => $commentValue,
                     'status' => $status,
                 ]);
+                $score = $existingScore;
             } else {
-                Score::create([
+                $score = Score::create([
                     'judge_id' => $user->id,
                     'participant_id' => $participant->id,
                     'event_id' => $category->event_id,
@@ -484,6 +756,21 @@ Log::warning('No active criteria for category save, category: ' . $category->id)
                     'comments' => $commentValue,
                     'status' => $status,
                 ]);
+            }
+
+            // Validate the score using the ScoringValidationService
+            $validationErrors = \App\Services\ScoringValidationService::validateScore($score);
+            
+            if (!empty($validationErrors)) {
+                // Create validation records for errors
+                foreach ($validationErrors as $error) {
+                    \App\Models\ScoreValidation::create([
+                        'score_id' => $score->id,
+                        'validation_type' => 'range',
+                        'is_valid' => false,
+                        'message' => $error,
+                    ]);
+                }
             }
         }
         
@@ -503,6 +790,9 @@ Log::warning('No active criteria for category save, category: ' . $category->id)
             return redirect()->route('judge.review-scores')
                 ->with('error', 'You are not assigned to this event.');
         }
+        
+        // Note: Bulk scoring shows all participants for event (admin handles assignments)
+        // Individual scoring checks will enforce participant assignments
         
         if ($category->status !== 'active') {
             return redirect()->route('judge.review-scores')
@@ -591,6 +881,21 @@ Log::warning('No criteria for bulk scoring category: ' . $category->id);
                         $scoreData
                     );
                     
+                    // Validate the score using the ScoringValidationService
+                    $validationErrors = \App\Services\ScoringValidationService::validateScore($score);
+                    
+                    if (!empty($validationErrors)) {
+                        // Create validation records for errors
+                        foreach ($validationErrors as $error) {
+                            \App\Models\ScoreValidation::create([
+                                'score_id' => $score->id,
+                                'validation_type' => 'range',
+                                'is_valid' => false,
+                                'message' => $error,
+                            ]);
+                        }
+                    }
+                    
                     if ($score->wasRecentlyCreated) {
                         $createdCount++;
                     } else {
@@ -607,6 +912,34 @@ Log::warning('No criteria for bulk scoring category: ' . $category->id);
     }
 
     /**
+     * Delete a score record.
+     */
+    public function destroyScore(Score $score)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        
+        // Only allow judge to delete their own scores
+        if ($score->judge_id !== $user->id) {
+            return redirect()->back()->with('error', 'Unauthorized to delete this score.');
+        }
+        
+        $score->delete();
+        
+        return redirect()->back()->with('success', 'Score deleted successfully.');
+    }
+
+    /**
+     * Judge scoring index page.
+     * Main entry point for judge scoring: shows overview and links to detailed scoring.
+     */
+    public function index(Request $request)
+    {
+        // Delegate to reviewScores for full functionality
+        return $this->reviewScores($request);
+    }
+
+    /**
      * Show participants scoring table with all their scores.
      * Displays participants in a table format with scores aggregated by category/criteria.
      */
@@ -614,126 +947,114 @@ Log::warning('No criteria for bulk scoring category: ' . $category->id);
     {
         /** @var User $user */
         $user = Auth::user();
+        $judgeId = $user->id;
         
-        // Get assigned event IDs
         $assignedEventIds = $user->judgeAssignments()->pluck('event_id');
         
-        // Get categories from assigned events
-        $categories = \App\Models\Category::whereIn('event_id', $assignedEventIds)
-            ->where('status', 'active')
-            ->with('event')
-            ->get();
+        // Base participant query: approved participants (reviewed submissions) from assigned events
+        $query = User::where('role', 'participant')
+            ->whereHas('submissions', function ($q) use ($assignedEventIds) {
+                $q->whereIn('event_id', $assignedEventIds)->where('status', 'reviewed');
+            })
+            ->with(['submissions.event', 'receivedScores.criteria.category.event'])
+            ->select('id', 'name', 'email');
         
-        // Get events for filter
-        $events = \App\Models\Event::whereIn('id', $assignedEventIds)
-            ->where('status', 'active')
-            ->get();
+        // Search filter
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%");
+            });
+        }
         
-        // Get all criteria from assigned events
-        $allCriteria = \App\Models\Criteria::with(['category', 'event'])
+        // Event filter
+        if ($eventId = $request->get('event_id')) {
+            $query->whereHas('submissions', function ($q) use ($eventId) {
+                $q->where('event_id', $eventId)->where('status', 'reviewed');
+            });
+        }
+        
+        // Category filter (via criteria with scores)
+        if ($categoryId = $request->get('category_id')) {
+            $query->whereHas('receivedScores.criteria.category', function ($q) use ($categoryId) {
+                $q->where('id', $categoryId);
+            });
+        }
+        
+        // Status filter
+        if ($status = $request->get('status')) {
+            $query->whereHas('receivedScores', function ($q) use ($status) {
+                $q->where('status', $status);
+            });
+        }
+        
+        $participants = $query->paginate(15)->appends($request->only(['search', 'event_id', 'category_id', 'status']));
+        
+        $participantIds = $participants->pluck('id');
+        
+        // Get ALL criteria from assigned events (for table columns)
+        $allCriteria = Criteria::with(['category:id,name', 'event:id,event_name'])
             ->whereIn('event_id', $assignedEventIds)
             ->where('status', 'active')
             ->get();
         
-        if ($allCriteria->isEmpty()) {
-Log::warning('No criteria in scoringParticipantsTable', ['event_ids' => $assignedEventIds]);
-        }
+        // Get judge's scores for these participants to compute scoreData
+        $scores = Score::with(['criteria', 'criteria.category'])
+            ->where('judge_id', $judgeId)
+            ->whereIn('participant_id', $participantIds)
+            ->get();
         
-        // Filter by category if selected
-        $categoryId = $request->query('category_id');
-        $eventId = $request->query('event_id');
-        $statusFilter = $request->query('status');
-        
-        // Build base query for participants with scores
-        $participantQuery = User::where('role', 'participant')
-            ->whereHas('submissions', function ($query) use ($assignedEventIds) {
-                $query->whereIn('event_id', $assignedEventIds)->where('status', 'reviewed');
-            });
-        
-        // Get participants
-        $participants = $participantQuery->paginate(15);
-        
-        // Get participant IDs for fetching scores
-        $participantIds = $participants->pluck('id');
-        
-// Get all scores for these participants by this judge
-        $scoresQuery = Score::with(['criteria', 'criteria.category', 'event'])
-            ->where('judge_id', $user->id)
-            ->whereIn('participant_id', $participantIds);
-
-        if ($categoryId) {
-            $scoresQuery->whereHas('criteria', function ($q) use ($categoryId) {
-                $q->where('category_id', $categoryId);
-            });
-        }
-
-        if ($eventId) {
-            $scoresQuery->where('event_id', $eventId);
-        }
-
-        $allScores = $scoresQuery->get();
-
-        /** @var \Illuminate\Support\Collection $allCriteria */
-        /** @var \App\Models\Score $score */
-        /** @var \App\Models\Criteria $currentCriterion */
-
-        // Group scores by participant and category
+        // Group scores to compute scoreData like view expects
         $scoresByParticipant = [];
-        foreach ($allScores as $score) {
-            /** @var \App\Models\Criteria $currentCriterion */
-            $currentCriterion = $score->criteria;
+        foreach ($scores as $score) {
             $pid = $score->participant_id;
-            $categoryId = $currentCriterion?->category?->id ?? 'uncategorized';
+            $cid = $score->criteria->category_id ?? 'uncategorized';
             
             if (!isset($scoresByParticipant[$pid])) {
                 $scoresByParticipant[$pid] = [];
             }
-            
-            if (!isset($scoresByParticipant[$pid][$categoryId])) {
-                $scoresByParticipant[$pid][$categoryId] = [
+            if (!isset($scoresByParticipant[$pid][$cid])) {
+                $scoresByParticipant[$pid][$cid] = [
                     'event_id' => $score->event_id,
-                    'event_name' => $score->event?->name ?? 'N/A',
-                    'category_id' => $categoryId,
-            'category_name' => $currentCriterion?->category?->name ?? 'Uncategorized',
+                    'event_name' => $score->criteria->event->event_name ?? 'N/A',
+                    'category_id' => $cid,
+                    'category_name' => $score->criteria->category->name ?? 'Uncategorized',
                     'criteria_scores' => [],
                     'total_score' => 0,
                     'max_possible' => 0,
                     'overall_status' => null,
                 ];
             }
-
-            $criterionId = $score->criteria_id;
-            $scoresByParticipant[$pid][$categoryId]['criteria_scores'][$criterionId] = [
+            
+            $critId = $score->criteria_id;
+            $scoresByParticipant[$pid][$cid]['criteria_scores'][$critId] = [
                 'score' => $score->score,
                 'status' => $score->status,
-                'max_score' => $currentCriterion?->max_score ?? 100,
+                'max_score' => $score->criteria->max_score ?? 100,
             ];
-
-            $scoresByParticipant[$pid][$categoryId]['total_score'] += $score->score;
-            $scoresByParticipant[$pid][$categoryId]['max_possible'] += ($currentCriterion?->max_score ?? 100);
             
-            // Determine overall status (prioritize submitted > pending > draft)
-            $currentStatus = $scoresByParticipant[$pid][$categoryId]['overall_status'];
-            if ($score->status === 'submitted') {
-                $scoresByParticipant[$pid][$categoryId]['overall_status'] = 'submitted';
-            } elseif ($score->status === 'pending' && $currentStatus !== 'submitted') {
-                $scoresByParticipant[$pid][$categoryId]['overall_status'] = 'pending';
-            } elseif ($score->status === 'draft' && $currentStatus === null) {
-                $scoresByParticipant[$pid][$categoryId]['overall_status'] = 'draft';
+            $scoresByParticipant[$pid][$cid]['total_score'] += $score->score;
+            $scoresByParticipant[$pid][$cid]['max_possible'] += ($score->criteria->max_score ?? 100);
+            
+            // Status priority: submitted > pending > draft
+            $statusPriority = ['submitted' => 3, 'pending' => 2, 'draft' => 1];
+            $currentPriority = isset($statusPriority[$scoresByParticipant[$pid][$cid]['overall_status']]) ? $statusPriority[$scoresByParticipant[$pid][$cid]['overall_status']] : 0;
+            $newPriority = $statusPriority[$score->status] ?? 0;
+            if ($newPriority > $currentPriority) {
+                $scoresByParticipant[$pid][$cid]['overall_status'] = $score->status;
             }
         }
         
-        // Attach score data to participants
+        // Attach to participants
         foreach ($participants as $participant) {
-            $pid = $participant->id;
-            $participant->scoreData = $scoresByParticipant[$pid] ?? [];
+            $participant->scoreData = $scoresByParticipant[$participant->id] ?? [];
         }
         
-        return view('judge.scoring.participants-table', compact(
-            'participants',
-            'categories',
-            'events',
-            'allCriteria'
-        ));
+        // For filters
+        $events = Event::whereIn('id', $assignedEventIds)->get(['id', 'event_name']);
+        $categories = Category::whereIn('event_id', $assignedEventIds)->get(['id', 'name']);
+        
+        return view('judge.scoring.participants-table', compact('participants', 'allCriteria', 'categories', 'events'));
     }
+
 }

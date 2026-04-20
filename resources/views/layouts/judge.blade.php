@@ -468,7 +468,7 @@
                 <div class="nav-section-title">Management</div>
                 <a href="{{ route('judge.manage_participants.index') }}" class="sidebar-nav-link {{ request()->routeIs('judge.manage_participants.*') ? 'active' : '' }}">
                     <i class="bi bi-people-fill"></i>
-                    <span>Manage Participants</span>
+                    <span>List of Participants</span>
                 </a>
 
                 <a href="{{ route('judge.event.index') }}" class="sidebar-nav-link {{ request()->routeIs('judge.event.*') ? 'active' : '' }}">
@@ -559,13 +559,9 @@
 
             <!-- Page Content -->
             <main class="admin-content">
-                @isset($header)
-                    <div class="page-header">
-                        {{ $header }}
-                    </div>
-                @endisset
+                @yield('header', '')
 
-                {{ $slot }}
+                @yield('content')
             </main>
         </div>
 

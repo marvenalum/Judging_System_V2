@@ -202,6 +202,10 @@ class CriteriaController extends Controller
      */
     public function edit(Criteria $criteria)
     {
+        if (!$criteria->exists) {
+            return redirect()->route('admin.criteria.index')->with('error', 'Criterion not found.');
+        }
+
         $categories = Category::all();
         $events = Event::all();
         return view('admin.criteria.edit', compact('criteria', 'categories', 'events'));
