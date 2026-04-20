@@ -30,7 +30,8 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p storage/logs \
     && mkdir -p bootstrap/cache \
     && chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 storage bootstrap/cache
+    && find /var/www/html/storage /var/www/html/bootstrap/cache -type d -exec chmod 755 {} \; \
+    && find /var/www/html/storage /var/www/html/bootstrap/cache -type f -exec chmod 644 {} \;
 
 # Install dependencies
 RUN composer install --no-interaction --optimize-autoloader --no-dev
@@ -38,10 +39,11 @@ RUN composer install --no-interaction --optimize-autoloader --no-dev
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
+# Pre-cache Laravel config and routes for faster startup
+RUN php artisan config:cache && php artisan route:cache
+
 # Create startup script
-RUN echo '#!/bin/sh\n\
-service nginx start\n\
-php-fpm' > /start.sh && chmod +x /start.sh
+RUN printf '#!/bin/sh\nset -e\necho "Running database migrations..."\nphp artisan migrate --force || { echo "Migration failed, exiting"; exit 1; }\necho "Starting nginx..."\nservice nginx start\necho "Starting PHP-FPM..."\nexec php-fpm\n' > /start.sh && chmod +x /start.sh
 
 # Expose ports
 EXPOSE 8080
