@@ -43,7 +43,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 RUN php artisan config:cache && php artisan route:cache
 
 # Create startup script
-RUN printf '#!/bin/sh\nset -e\necho "Running database migrations..."\nphp artisan migrate --force || { echo "Migration failed, exiting"; exit 1; }\necho "Starting nginx..."\nservice nginx start\necho "Starting PHP-FPM..."\nexec php-fpm\n' > /start.sh && chmod +x /start.sh
+RUN printf '#!/bin/sh\\nset -e\\necho \"Starting nginx...\"\\nservice nginx start\\necho \"Starting PHP-FPM...\"\\nexec php-fpm\\n' > /start.sh && chmod +x /start.sh
 
 # Expose ports
 EXPOSE 8080
