@@ -36,7 +36,7 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 RUN composer install --no-interaction --optimize-autoloader --no-dev
 
 # Copy nginx configuration
-COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Create startup script
 RUN echo '#!/bin/sh\n\
