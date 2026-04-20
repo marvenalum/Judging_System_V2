@@ -56,9 +56,5 @@ RUN chmod +x /start.sh
 # Expose ports
 EXPOSE 8080
 
-# Healthcheck: verify nginx is responding on port 8080
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl -f http://localhost:8080/healthz || exit 1
-
 # Start services
 CMD ["/start.sh"]
