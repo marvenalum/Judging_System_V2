@@ -46,6 +46,8 @@ RUN php artisan config:cache && php artisan route:cache
 RUN cat > /start.sh << 'EOF'
 #!/bin/sh
 set -e
+echo "Running database migrations..."
+php artisan migrate --force || echo "Warning: Migration failed, but continuing startup"
 echo "Starting nginx..."
 service nginx start
 echo "Starting PHP-FPM..."
