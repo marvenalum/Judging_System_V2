@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -12,13 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Rename columns first, each in its own Schema::table call so that
+        // subsequent hasColumn checks reflect the updated column names.
+        if (Schema::hasColumn('events', 'name')) {
+            Schema::table('events', function (Blueprint $table) {
+                $table->renameColumn('name', 'event_name');
+            });
+        }
+
+        if (Schema::hasColumn('events', 'description')) {
+            Schema::table('events', function (Blueprint $table) {
+                $table->renameColumn('description', 'event_description');
+            });
+        }
+
         Schema::table('events', function (Blueprint $table) {
-            if (Schema::hasColumn('events', 'name')) {
-                DB::statement('ALTER TABLE events CHANGE name event_name VARCHAR(255)');
-            }
-            if (Schema::hasColumn('events', 'description')) {
-                DB::statement('ALTER TABLE events CHANGE description event_description TEXT');
-            }
             if (!Schema::hasColumn('events', 'event_type')) {
                 $table->enum('event_type', ['pageant', 'contest', 'competition'])->after('event_description');
             }
