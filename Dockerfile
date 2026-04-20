@@ -43,7 +43,15 @@ COPY nginx.conf /etc/nginx/nginx.conf
 RUN php artisan config:cache && php artisan route:cache
 
 # Create startup script
-RUN printf '#!/bin/sh\\nset -e\\necho \"Starting nginx...\"\\nservice nginx start\\necho \"Starting PHP-FPM...\"\\nexec php-fpm\\n' > /start.sh && chmod +x /start.sh
+RUN cat > /start.sh << 'EOF'
+#!/bin/sh
+set -e
+echo "Starting nginx..."
+service nginx start
+echo "Starting PHP-FPM..."
+exec php-fpm
+EOF
+RUN chmod +x /start.sh
 
 # Expose ports
 EXPOSE 8080
