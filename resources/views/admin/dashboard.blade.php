@@ -153,6 +153,7 @@
                     <a href="{{ route('admin.users.index') }}" class="quick-action-btn"><i class="bi bi-person-plus-fill"></i> Manage Users</a>
                     <a href="{{ route('admin.event.create') }}" class="quick-action-btn"><i class="bi bi-calendar-plus-fill"></i> Create Event</a>
                     <a href="{{ route('admin.criteria.index') }}" class="quick-action-btn accent"><i class="bi bi-clipboard-check-fill"></i> Setup Criteria</a>
+                    <a href="{{ route('admin.judge.index') }}" class="quick-action-btn"><i class="bi bi-gavel-fill"></i> Manage Judges</a>
                 </div>
 
                 <div class="action-card activity-feed">

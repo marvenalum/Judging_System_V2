@@ -486,9 +486,24 @@
                     <span>Categories</span>
                 </a>
 
+                <a href="{{ route('admin.judge.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.judge.*') ? 'active' : '' }}">
+                    <i class="bi bi-tag-fill"></i>
+                    <span>Assign Judges</span>
+                </a>
+
                 <a href="{{ route('admin.criteria.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.criteria.*') ? 'active' : '' }}">
                     <i class="bi bi-list-check"></i>
                     <span>Criteria</span>
+                </a>
+
+                <a href="{{ route('admin.result-publications.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.result-publications.*') ? 'active' : '' }}">
+                    <i class="bi bi-trophy-fill"></i>
+                    <span>Result Publications</span>
+                </a>
+
+                <a href="{{ route('admin.bulk-import.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.bulk-import.*') ? 'active' : '' }}">
+                    <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+                    <span>Bulk Import/Export</span>
                 </a>
 
                 <div class="nav-section-title">Settings</div>

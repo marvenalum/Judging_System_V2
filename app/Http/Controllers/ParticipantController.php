@@ -31,9 +31,11 @@ class ParticipantController extends Controller
      */
     public function eventIndex()
     {
-        $events = Event::paginate(15);
-        $userId = Auth::id();
-        return view('participant.events.index', compact('events', 'userId'));
+        $user = Auth::user();
+        $events = Event::with(['submissions' => function($query) use ($user) {
+            $query->where('participant_id', $user->id);
+        }])->paginate(15);
+        return view('participant.events.index', compact('events', 'user'));
     }
 
     /**
@@ -118,6 +120,11 @@ class ParticipantController extends Controller
     {
         $user = Auth::user();
 
+        // Check if profile is complete
+        if (!$user->hasCompleteProfile()) {
+            return redirect()->route('participant.event.index')->with('error', 'Please complete your participant profile first in Settings before applying.');
+        }
+
         // Check if already applied
         if ($event->hasApplied($user->id)) {
             return redirect()->route('participant.event.index')->with('error', 'You have already applied to this event.');
@@ -134,6 +141,34 @@ class ParticipantController extends Controller
         ]);
 
         return redirect()->route('participant.event.index')->with('success', 'You have successfully applied to the event!');
+    }
+
+    /**
+     * Store participant profile.
+     */
+    public function participantProfileStore(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'age' => 'nullable|integer|min:13|max:100',
+            'gender' => 'nullable|in:male,female,other',
+            'contact_number' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'bio' => 'nullable|string',
+            'height' => 'nullable|numeric|min:0|max:10',
+            'weight' => 'nullable|numeric|min:0|max:1000',
+            'measurements' => 'nullable|array',
+            'photo' => 'nullable|string|max:255',
+        ]);
+
+        $profile = $user->participantProfile()->updateOrCreate(
+            ['user_id' => $user->id],
+            array_merge($validated, ['is_complete' => true])
+        );
+
+        return redirect()->route('participant.settings')->with('success', 'Participant profile updated successfully!');
     }
 
     // ==================== CATEGORIES ====================
@@ -324,6 +359,38 @@ class ParticipantController extends Controller
      */
     public function settings()
     {
-        return view('participant.settings');
+        $user = Auth::user();
+        $profile = $user->participantProfile;
+        return view('participant.settings', compact('user', 'profile'));
+    }
+
+    /**
+     * Display listing of participant's scores.
+     */
+    public function scoreIndex()
+    {
+        $user = Auth::user();
+        
+        // Load all received scores with relationships
+        $scores = $user->receivedScores()
+            ->with(['event', 'criteria.category', 'judge'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+        
+        // Compute event statistics
+        $eventStats = $user->receivedScores()
+            ->select('event_id')
+            ->selectRaw('
+                SUM(score) as total_score,
+                AVG(score) as avg_score,
+                COUNT(*) as num_scores,
+                COUNT(DISTINCT judge_id) as num_judges
+            ')
+            ->groupBy('event_id')
+            ->with('event')
+            ->get()
+            ->keyBy('event_id');
+        
+        return view('participant.scores.index', compact('scores', 'eventStats'));
     }
 }

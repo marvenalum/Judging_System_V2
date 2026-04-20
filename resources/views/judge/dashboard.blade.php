@@ -1,9 +1,10 @@
-<x-judge-layout>
-    <x-slot name="header">
-        <h2 class="page-title">Judges Dashboard</h2>
-        <p class="page-subtitle">Manage your assigned events and score participants</p>
-    </x-slot>
+@extends('layouts.judge')
 
+@section('header')
+    <h2 class="page-title">Judges Dashboard</h2>
+    <p class="page-subtitle">Manage your assigned events and score participants</p>
+@endsection
+@section( 'content')
     <!-- Dashboard Styles -->
     <style>
         :root {
@@ -201,4 +202,4 @@
             </div>
         </div>
     </div>
-</x-judge-layout>
+@endsection

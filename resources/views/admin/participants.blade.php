@@ -463,7 +463,7 @@
       <p>Review and manage participant applications</p>
     </div>
     <div class="topbar-right">
-      <span class="count-badge">{{ $submissions->count() }} applications</span>
+  <span class="count-badge">{{ $submissions->total() }} applications</span>
     </div>
   </div>
 
@@ -482,7 +482,7 @@
     <a href="{{ route('admin.participants.index', ['status' => 'pending']) }}" 
        class="filter-tab {{ $status === 'pending' ? 'active' : '' }} filter-tab--pending">Pending</a>
     <a href="{{ route('admin.participants.index', ['status' => 'reviewed']) }}" 
-       class="filter-tab {{ $status === 'reviewed' ? 'active' : '' }} filter-tab--reviewed">Approved</a>
+       class="filter-tab {{ $status === 'reviewed' ? 'active' : '' }} filter-tab--reviewed">Reviewed</a>
     <a href="{{ route('admin.participants.index', ['status' => 'draft']) }}" 
        class="filter-tab {{ $status === 'draft' ? 'active' : '' }} filter-tab--draft">Declined</a>
     <a href="{{ route('admin.participants.index', ['status' => 'all']) }}" 
@@ -507,9 +507,11 @@
         <tbody>
           @forelse($submissions as $index => $submission)
           <tr style="animation-delay: {{ $index * 0.05 }}s">
-            <td>
+<td>
               <div style="display: flex; align-items: center; gap: 12px;">
-                <div class="avatar">{{ strtoupper(substr($submission->participant->name ?? 'U', 0, 2)) }}</div>
+                <div class="avatar">
+                  {{ strtoupper(substr(($submission->participant->name ?? 'Unknown'), 0, 2)) }}
+                </div>
                 <div class="participant-info">
                   <div class="participant-name">{{ $submission->participant->name ?? 'Unknown' }}</div>
                   <div class="participant-email">{{ $submission->participant->email ?? '' }}</div>
@@ -527,57 +529,47 @@
             <td><div class="cell-title" title="{{ $submission->title }}">{{ $submission->title }}</div></td>
             <td><div class="cell-desc" title="{{ $submission->description }}">{{ $submission->description ? substr($submission->description, 0, 60) . (strlen($submission->description) > 60 ? '...' : '') : 'No description' }}</div></td>
             <td>
-              @if($submission->status === 'pending')
-                <span class="badge badge-pending">{{ ucfirst($submission->status) }}</span>
-              @elseif($submission->status === 'reviewed')
-                <span class="badge badge-approved">Approved</span>
-              @elseif($submission->status === 'draft')
-                <span class="badge badge-declined">Declined</span>
-              @else
-                <span class="badge badge-pending">{{ ucfirst($submission->status) }}</span>
-              @endif
+@php
+                $status = $submission->status;
+                $statusClass = match($status) {
+                  'reviewed' => 'badge-approved',
+                  'pending' => 'badge-pending', 
+                  'draft' => 'badge-declined',
+                  default => 'badge-pending'
+                };
+                $statusLabel = match($status) {
+                  'reviewed' => 'Approved',
+                  'pending' => 'Pending',
+                  'draft' => 'Declined',
+                  default => ucfirst($status)
+                };
+              @endphp
+              <span class="badge {{ $statusClass }}">
+                {{ $statusLabel }}
+              </span>
             </td>
             <td><span class="date">{{ $submission->submitted_at ? $submission->submitted_at->format('M d, Y h:i A') : 'N/A' }}</span></td>
             <td>
               <div class="actions">
-                @if($submission->status === 'pending')
-                  <form method="POST" action="{{ route('admin.participants.approve', $submission) }}" style="display:inline;">
-                    @csrf
-                    <button type="submit" class="btn-icon btn-approve" title="Approve">
-                      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                      </svg>
-                      Approve
-                    </button>
-                  </form>
-                  <form method="POST" action="{{ route('admin.participants.decline', $submission) }}" style="display:inline;">
-                    @csrf
-                    <button type="submit" class="btn-icon btn-decline" title="Decline" onclick="return confirm('Decline this application?')">
-                      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                      </svg>
-                      Decline
-                    </button>
-                  </form>
-                @endif
-                
-                {{-- Edit and Delete always available --}}
-                <a href="{{ route('admin.participants.edit', $submission) }}" class="btn-icon" style="color: var(--accent); background: var(--accent-dim); border-color: rgba(79,124,255,.22);" title="Edit">
-                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                  </svg>
-                  Edit
+                <a href="{{ route('admin.participants.edit', $submission) }}" class="btn-edit btn-icon" title="Edit application">
+                  ✏️ Edit
                 </a>
                 
-                <form method="POST" action="{{ route('admin.participants.destroy', $submission) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this submission? This action cannot be undone.')">
+                @if($status === 'pending')
+                <form action="{{ route('admin.participants.approve', $submission) }}" method="POST" style="display: inline;" onsubmit="return confirm('Approve this participant application?')">
+                  @csrf
+                  <button type="submit" class="btn-approve btn-icon" title="Approve application">✅ Approve</button>
+                </form>
+                <form action="{{ route('admin.participants.decline', $submission) }}" method="POST" style="display: inline;" onsubmit="return confirm('Decline this participant application?')">
+                  @csrf
+                  <button type="submit" class="btn-decline btn-icon" title="Decline application">❌ Decline</button>
+                </form>
+                @endif
+                
+                <form action="{{ route('admin.participants.destroy', $submission) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this application?')">
                   @csrf
                   @method('DELETE')
-                  <button type="submit" class="btn-icon" style="color: var(--red); background: var(--red-dim); border-color: rgba(255,92,108,.18);" title="Delete">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                    </svg>
-                    Delete
-                  </button>
+                  <button type="submit" class="btn-delete btn-icon" title="Delete application">🗑️ Delete</button>
                 </form>
               </div>
             </td>
@@ -589,9 +581,11 @@
                 <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 0 2 11-4 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
-                <h3>No applications found</h3>
-                <p>There are no participant applications matching this filter.</p>
-                <a href="{{ route('admin.participants.index') }}">Reset filters</a>
+                <h3>No Applications Available</h3>
+                <p>No approved participant applications found. Check event submissions or wait for applications to be approved.</p>
+                <a href="{{ route('admin.dashboard') }}" style="color: var(--accent); text-decoration: none; font-weight: 500;">
+                  ← Back to Dashboard
+                </a>
               </div>
             </td>
           </tr>

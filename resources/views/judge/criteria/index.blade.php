@@ -1,10 +1,10 @@
-<x-judge-layout>
-<x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        {{ __('Judge Criteria') }}
-    </h2>
-</x-slot>
 
+@extends('layouts.judge')
+
+@section('header')
+    <h2 class="page-title">Judge Criteria</h2>
+@endsection
+@section( 'content')
 <style>
   :root {
     --bg: #0d0f14;
@@ -531,4 +531,4 @@
  @endforelse
 </div>
 
-</x-judge-layout>
+@endsection

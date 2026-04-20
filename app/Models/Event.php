@@ -14,11 +14,14 @@ class Event extends Model
         'end_date',
         'event_status',
         'created_by',
+        'anonymous_judging',
+        'anonymity_level',
     ];
 
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
+        'anonymous_judging' => 'boolean',
     ];
 
     public function categories()
@@ -32,6 +35,14 @@ class Event extends Model
     public function judgeAssignments()
     {
         return $this->hasMany(\App\Models\JudgeEventAssignment::class, 'event_id');
+    }
+
+    /**
+     * Get the anonymous judge mappings for this event.
+     */
+    public function anonymousJudgeMappings()
+    {
+        return $this->hasMany(\App\Models\AnonymousJudgeMapping::class);
     }
 
     /**
