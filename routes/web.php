@@ -43,7 +43,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin Dashboard Routes
-Route::prefix('admin')->middleware(['auth', 'verified', 'role:admin'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/settings', [AdminController::class, 'settings'])->name('admin.settings');
     Route::resource('events', AdminController::class, [
@@ -118,7 +118,7 @@ Route::prefix('admin')->middleware(['auth', 'verified', 'role:admin'])->group(fu
 });
 
 // Participant Dashboard Routes
-Route::prefix('participant')->middleware(['auth', 'verified', 'role:participant'])->group(function () {
+Route::prefix('participant')->middleware(['auth', 'role:participant'])->group(function () {
     Route::get('/dashboard', [ParticipantController::class, 'dashboard'])->name('participant.dashboard');
     Route::get('/settings', [ParticipantController::class, 'settings'])->name('participant.settings');
     
@@ -157,7 +157,7 @@ Route::prefix('participant')->middleware(['auth', 'verified', 'role:participant'
 });
 
 // Judge Dashboard Routes
-Route::prefix('judge')->middleware(['auth', 'verified', 'role:judge'])->group(function () {
+Route::prefix('judge')->middleware(['auth', 'role:judge'])->group(function () {
     Route::get('/dashboard', [JudgeController::class, 'dashboard'])->name('judge.dashboard');
     Route::get('/assigned-events', [JudgeController::class, 'assignedEvents'])->name('judge.assigned-events');
     Route::get('/my-events', [JudgeController::class, 'myEvents'])->name('judge.my-events');
