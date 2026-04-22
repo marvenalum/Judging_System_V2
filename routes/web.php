@@ -20,6 +20,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/healthz', function () {
+    return response()->json(['status' => 'ok']);
+});
+
 Route::get('/dashboard', function (): \Illuminate\Http\RedirectResponse|\Illuminate\View\View {
     $user = Auth::user();
     if ($user->role === 'admin') {
