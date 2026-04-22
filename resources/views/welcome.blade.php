@@ -3,1448 +3,1203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JudgingSystem - Enterprise Competition Management Platform</title>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700|space-grotesk:500,600,700" rel="stylesheet" />
+    <title> Judging Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Josefin+Sans:wght@200;300;400;600&display=swap" rel="stylesheet">
     <style>
-        * {
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
         :root {
-            --navy-900: #0A1628;
-            --navy-800: #142236;
-            --navy-700: #1E2D44;
-            --navy-600: #2A3F5F;
-            --slate-500: #64748B;
-            --slate-400: #94A3B8;
-            --slate-300: #CBD5E1;
-            --slate-200: #E2E8F0;
-            --slate-100: #F1F5F9;
-            --slate-50: #F8FAFC;
-            --white: #FFFFFF;
-            
-            --blue-600: #2563EB;
-            --blue-500: #3B82F6;
-            --blue-400: #60A5FA;
-            
-            --gold-600: #D97706;
-            --gold-500: #F59E0B;
-            
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            
-            --spacing-xs: 0.25rem;
-            --spacing-sm: 0.5rem;
-            --spacing-md: 1rem;
-            --spacing-lg: 1.5rem;
-            --spacing-xl: 2rem;
-            --spacing-2xl: 3rem;
-            --spacing-3xl: 4rem;
-            
-            --radius-sm: 0.25rem;
-            --radius-md: 0.5rem;
-            --radius-lg: 0.75rem;
-            --radius-xl: 1rem;
+            --black: #0A0A0A;
+            --near-black: #111111;
+            --deep: #1A1208;
+            --gold: #C9A84C;
+            --gold-light: #E8C97A;
+            --gold-pale: #F5E6C0;
+            --rose: #C9748A;
+            --rose-light: #E8A0B0;
+            --cream: #FAF7F2;
+            --warm-white: #FDF9F4;
+            --text-muted: rgba(250,247,242,0.5);
+            --text-dim: rgba(250,247,242,0.3);
+            --border: rgba(201,168,76,0.2);
+            --border-light: rgba(201,168,76,0.1);
         }
+
+        html { scroll-behavior: smooth; }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--white);
-            color: var(--navy-900);
-            line-height: 1.6;
+            font-family: 'Josefin Sans', sans-serif;
+            background: var(--black);
+            color: var(--cream);
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Typography */
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 600;
-            line-height: 1.2;
-            letter-spacing: -0.02em;
+        /* ── NOISE TEXTURE ─────────────────────── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.6;
         }
 
-        /* Header */
+        /* ── HEADER ────────────────────────────── */
         header {
-            position: sticky;
+            position: fixed;
             top: 0;
+            width: 100%;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px) saturate(180%);
-            -webkit-backdrop-filter: blur(12px) saturate(180%);
-            border-bottom: 1px solid var(--slate-200);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0 3rem;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(180deg, rgba(10,10,10,0.95) 0%, transparent 100%);
+            backdrop-filter: blur(4px);
+            transition: background 0.4s ease;
         }
 
         header.scrolled {
-            box-shadow: var(--shadow-md);
-        }
-
-        .header-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 var(--spacing-xl);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 72px;
+            background: rgba(10,10,10,0.97);
+            border-bottom: 1px solid var(--border);
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: var(--spacing-md);
+            gap: 0.75rem;
             text-decoration: none;
-            color: var(--navy-900);
-            font-weight: 700;
-            font-size: 1.25rem;
-            font-family: 'Space Grotesk', sans-serif;
-            letter-spacing: -0.01em;
         }
 
-        .logo-mark {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--blue-600) 0%, var(--blue-400) 100%);
-            border-radius: var(--radius-lg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 1.25rem;
-            box-shadow: var(--shadow-md);
+        .logo-crown {
+            font-size: 1.4rem;
+            line-height: 1;
+        }
+
+        .logo-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--gold-light);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
         }
 
         .main-nav {
             display: flex;
-            gap: var(--spacing-2xl);
+            gap: 3rem;
             align-items: center;
         }
 
         .nav-link {
-            color: var(--slate-500);
+            color: var(--text-muted);
             text-decoration: none;
-            font-weight: 500;
-            font-size: 0.9375rem;
-            padding: var(--spacing-sm) 0;
-            position: relative;
-            transition: color 0.2s ease;
+            font-size: 0.7rem;
+            font-weight: 400;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
         }
 
-        .nav-link:hover,
-        .nav-link.active {
-            color: var(--navy-900);
-        }
+        .nav-link:hover { color: var(--gold-light); }
 
-        .nav-link.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--blue-600);
-            border-radius: 2px;
+        .nav-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--border);
         }
 
         .auth-buttons {
             display: flex;
-            gap: var(--spacing-md);
+            gap: 1rem;
             align-items: center;
         }
 
         .btn {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            padding: 0.625rem 1.25rem;
-            border-radius: var(--radius-lg);
+            gap: 0.5rem;
             text-decoration: none;
-            font-weight: 500;
-            font-size: 0.9375rem;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid transparent;
+            font-family: 'Josefin Sans', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
             cursor: pointer;
-            white-space: nowrap;
+            border: none;
         }
 
         .btn-ghost {
-            color: var(--navy-900);
+            color: var(--text-muted);
             background: transparent;
+            padding: 0.6rem 1.2rem;
         }
 
-        .btn-ghost:hover {
-            background: var(--slate-100);
+        .btn-ghost:hover { color: var(--cream); }
+
+        .btn-gold {
+            background: var(--gold);
+            color: var(--black);
+            padding: 0.75rem 1.75rem;
+            clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
         }
 
-        .btn-primary {
-            background: var(--navy-900);
-            color: white;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .btn-primary:hover {
-            background: var(--navy-800);
-            box-shadow: var(--shadow-md);
+        .btn-gold:hover {
+            background: var(--gold-light);
             transform: translateY(-1px);
         }
 
-        .btn-blue {
-            background: var(--blue-600);
-            color: white;
-            box-shadow: var(--shadow-sm);
+        .btn-outline-gold {
+            background: transparent;
+            color: var(--gold);
+            padding: 0.75rem 1.75rem;
+            border: 1px solid var(--gold);
         }
 
-        .btn-blue:hover {
-            background: var(--blue-500);
-            box-shadow: var(--shadow-md);
-            transform: translateY(-1px);
+        .btn-outline-gold:hover {
+            background: rgba(201,168,76,0.1);
         }
 
         .btn-large {
-            padding: 0.875rem 1.75rem;
-            font-size: 1rem;
+            font-size: 0.7rem;
+            padding: 1rem 2.5rem;
         }
 
-        .btn-outline {
-            border: 1px solid var(--slate-300);
-            color: var(--navy-900);
-            background: white;
-        }
-
-        .btn-outline:hover {
-            border-color: var(--navy-900);
-            background: var(--slate-50);
-        }
-
-        /* Mobile Menu */
+        /* ── MOBILE ────────────────────────────── */
         .mobile-menu-btn {
             display: none;
             background: none;
             border: none;
             cursor: pointer;
-            padding: var(--spacing-sm);
-            color: var(--navy-900);
+            color: var(--cream);
         }
 
         .mobile-menu {
             display: none;
             position: fixed;
-            top: 0;
-            right: -100%;
-            width: 320px;
-            height: 100vh;
-            background: white;
-            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
-            padding: var(--spacing-2xl);
-            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 2000;
+            inset: 0;
+            background: rgba(10,10,10,0.98);
+            z-index: 999;
             flex-direction: column;
-            gap: var(--spacing-lg);
+            align-items: center;
+            justify-content: center;
+            gap: 2.5rem;
         }
 
-        .mobile-menu.active {
-            right: 0;
+        .mobile-menu.active { display: flex; }
+
+        .mobile-menu .nav-link {
+            font-size: 0.9rem;
+            color: var(--cream);
         }
 
-        .mobile-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(10, 22, 40, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 1999;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        .mobile-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: none;
+            border: none;
+            color: var(--cream);
+            cursor: pointer;
+            font-size: 1.5rem;
         }
 
-        .mobile-overlay.active {
-            opacity: 1;
-        }
-
-        .mobile-nav-link {
-            color: var(--navy-900);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 1.0625rem;
-            padding: var(--spacing-md) 0;
-            border-bottom: 1px solid var(--slate-200);
-        }
-
-        .mobile-auth {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-md);
-            margin-top: auto;
-        }
-
-        /* Hero Section */
+        /* ── HERO ──────────────────────────────── */
         .hero {
-            background: linear-gradient(180deg, var(--slate-50) 0%, var(--white) 100%);
-            padding: 6rem var(--spacing-xl) 8rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
             overflow: hidden;
+            padding: 8rem 3rem 6rem;
         }
 
-        .hero::before {
-            content: '';
+        .hero-bg {
             position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 1440px;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(37, 99, 235, 0.06) 0%, transparent 50%);
+            inset: 0;
+            background:
+                radial-gradient(ellipse 70% 80% at 50% 120%, rgba(201,168,76,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 50% at 20% 50%, rgba(201,116,138,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 50% at 80% 50%, rgba(201,168,76,0.06) 0%, transparent 60%);
+        }
+
+        /* Decorative arcs */
+        .hero-arc {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid;
             pointer-events: none;
         }
 
-        .hero-container {
-            max-width: 1280px;
-            margin: 0 auto;
+        .hero-arc-1 {
+            width: 600px; height: 600px;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border-color: rgba(201,168,76,0.08);
+        }
+
+        .hero-arc-2 {
+            width: 900px; height: 900px;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border-color: rgba(201,168,76,0.05);
+        }
+
+        .hero-arc-3 {
+            width: 1200px; height: 1200px;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border-color: rgba(201,168,76,0.03);
+        }
+
+        /* Vertical gold lines */
+        .hero-line {
+            position: absolute;
+            width: 1px;
+            height: 100%;
+            top: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(201,168,76,0.15) 40%, rgba(201,168,76,0.15) 60%, transparent 100%);
+        }
+
+        .hero-line-left { left: 20%; }
+        .hero-line-right { right: 20%; }
+
+        .hero-content {
+            max-width: 900px;
+            text-align: center;
             position: relative;
             z-index: 1;
         }
 
-        .hero-content {
-            max-width: 720px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .hero-badge {
-            display: inline-flex;
+        .hero-eyebrow {
+            display: flex;
             align-items: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-sm) var(--spacing-lg);
-            background: white;
-            border: 1px solid var(--slate-200);
-            border-radius: 100px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--navy-900);
-            margin-bottom: var(--spacing-xl);
-            box-shadow: var(--shadow-sm);
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
         }
 
-        .hero-badge-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--blue-600);
-            border-radius: 50%;
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        .eyebrow-line {
+            width: 60px;
+            height: 1px;
+            background: var(--gold);
+            opacity: 0.5;
         }
 
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
+        .eyebrow-text {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--gold);
         }
 
         .hero h1 {
-            font-size: 3.75rem;
-            font-weight: 700;
-            margin-bottom: var(--spacing-xl);
-            color: var(--navy-900);
-            letter-spacing: -0.03em;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(3.5rem, 8vw, 7rem);
+            font-weight: 300;
+            line-height: 1.05;
+            color: var(--cream);
+            margin-bottom: 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            color: var(--gold-light);
         }
 
         .hero-subtitle {
-            font-size: 1.25rem;
-            color: var(--slate-500);
-            max-width: 640px;
-            margin: 0 auto var(--spacing-2xl);
-            line-height: 1.7;
+            font-size: 0.8rem;
+            font-weight: 300;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            line-height: 2;
+            max-width: 560px;
+            margin: 2rem auto 3.5rem;
+            text-transform: uppercase;
         }
 
         .hero-cta {
             display: flex;
-            gap: var(--spacing-md);
+            gap: 1rem;
             justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: var(--spacing-3xl);
+            margin-bottom: 5rem;
         }
 
-        .hero-stats {
+        .hero-ornament {
+            position: absolute;
+            bottom: -2rem;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
-            gap: var(--spacing-2xl);
-            justify-content: center;
-            padding-top: var(--spacing-2xl);
-            border-top: 1px solid var(--slate-200);
-        }
-
-        .hero-stat {
-            text-align: center;
-        }
-
-        .hero-stat-value {
-            font-size: 1.875rem;
-            font-weight: 700;
-            color: var(--navy-900);
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        .hero-stat-label {
-            font-size: 0.875rem;
-            color: var(--slate-500);
-            margin-top: var(--spacing-xs);
-        }
-
-        /* Trust Section */
-        .trust-section {
-            background: white;
-            padding: var(--spacing-3xl) var(--spacing-xl);
-            border-top: 1px solid var(--slate-200);
-            border-bottom: 1px solid var(--slate-200);
-        }
-
-        .trust-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        .trust-label {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--slate-400);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: var(--spacing-xl);
-        }
-
-        .trust-logos {
-            display: flex;
-            gap: var(--spacing-3xl);
-            justify-content: center;
             align-items: center;
-            flex-wrap: wrap;
+            gap: 1rem;
+            color: var(--text-dim);
+            font-size: 0.6rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
         }
 
-        .trust-logo {
-            height: 32px;
-            opacity: 0.4;
-            filter: grayscale(1);
-            transition: all 0.3s ease;
+        .hero-ornament-line {
+            width: 40px;
+            height: 1px;
+            background: currentColor;
         }
 
-        .trust-logo:hover {
-            opacity: 0.7;
-            filter: grayscale(0);
+        /* Stats strip */
+        .stats-strip {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            gap: 0;
         }
 
-        /* Features Section */
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem 3.5rem;
+            border-left: 1px solid var(--border);
+        }
+
+        .stat-item:last-child { border-right: 1px solid var(--border); }
+
+        .stat-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.5rem;
+            font-weight: 400;
+            color: var(--gold-light);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* ── DIVIDER ───────────────────────────── */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 2rem 0;
+        }
+
+        .divider-line {
+            width: 80px;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider-diamond {
+            width: 6px;
+            height: 6px;
+            background: var(--gold);
+            transform: rotate(45deg);
+            opacity: 0.6;
+        }
+
+        /* ── FEATURES ──────────────────────────── */
         .features-section {
-            padding: 6rem var(--spacing-xl);
-            background: var(--white);
+            padding: 8rem 3rem;
+            background: var(--near-black);
+            position: relative;
         }
 
-        .features-container {
-            max-width: 1280px;
-            margin: 0 auto;
+        .features-section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
         }
 
         .section-header {
             text-align: center;
-            max-width: 720px;
-            margin: 0 auto var(--spacing-3xl);
+            max-width: 680px;
+            margin: 0 auto 5rem;
         }
 
         .section-label {
-            font-size: 0.875rem;
+            font-size: 0.6rem;
             font-weight: 600;
-            color: var(--blue-600);
+            letter-spacing: 0.3em;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: var(--spacing-md);
+            color: var(--gold);
+            margin-bottom: 1.25rem;
         }
 
         .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--navy-900);
-            margin-bottom: var(--spacing-md);
-            letter-spacing: -0.02em;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 300;
+            color: var(--cream);
+            line-height: 1.15;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-title em {
+            font-style: italic;
+            color: var(--gold-light);
         }
 
         .section-description {
-            font-size: 1.125rem;
-            color: var(--slate-500);
-            line-height: 1.7;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            line-height: 2;
+            text-transform: uppercase;
         }
 
         .features-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: var(--spacing-2xl);
+            gap: 0;
+            max-width: 1200px;
+            margin: 0 auto;
+            border: 1px solid var(--border);
         }
 
         .feature-card {
-            background: white;
-            padding: var(--spacing-2xl);
-            border-radius: var(--radius-xl);
-            border: 1px solid var(--slate-200);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 3rem;
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            transition: background 0.4s ease;
         }
 
-        .feature-card:hover {
-            border-color: var(--blue-600);
-            box-shadow: var(--shadow-lg);
-            transform: translateY(-4px);
+        .feature-card:nth-child(3n) { border-right: none; }
+        .feature-card:nth-child(n+4) { border-bottom: none; }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
         }
 
-        .feature-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, var(--blue-600) 0%, var(--blue-400) 100%);
-            border-radius: var(--radius-lg);
+        .feature-card:hover { background: rgba(201,168,76,0.03); }
+        .feature-card:hover::before { transform: scaleX(1); }
+
+        .feature-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4rem;
+            font-weight: 300;
+            color: var(--border);
+            line-height: 1;
+            margin-bottom: 1.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .feature-card:hover .feature-number { color: rgba(201,168,76,0.2); }
+
+        .feature-icon-wrap {
+            width: 44px;
+            height: 44px;
+            border: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: var(--spacing-lg);
+            margin-bottom: 1.5rem;
+            transition: border-color 0.3s ease;
         }
 
-        .feature-icon svg {
-            width: 24px;
-            height: 24px;
-            color: white;
+        .feature-card:hover .feature-icon-wrap { border-color: var(--gold); }
+
+        .feature-icon-wrap svg {
+            width: 20px;
+            height: 20px;
+            color: var(--gold);
         }
 
         .feature-card h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--navy-900);
-            margin-bottom: var(--spacing-md);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: var(--cream);
+            margin-bottom: 1rem;
+            letter-spacing: 0.02em;
         }
 
         .feature-card p {
-            color: var(--slate-500);
-            line-height: 1.7;
+            font-size: 0.72rem;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            line-height: 2;
         }
 
-        /* Value Props Section */
-        .value-props {
-            background: var(--slate-50);
-            padding: 6rem var(--spacing-xl);
+        /* ── CATEGORIES / VALUE PROPS ──────────── */
+        .value-section {
+            padding: 8rem 3rem;
+            background: var(--black);
+            position: relative;
         }
 
-        .value-props-container {
-            max-width: 1280px;
+        .value-inner {
+            max-width: 1200px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6rem;
+            align-items: center;
         }
 
-        .value-grid {
+        .value-text h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 300;
+            line-height: 1.2;
+            color: var(--cream);
+            margin-bottom: 2rem;
+        }
+
+        .value-text h2 em {
+            font-style: italic;
+            color: var(--gold-light);
+        }
+
+        .value-text p {
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            line-height: 2.2;
+            text-transform: uppercase;
+            margin-bottom: 2.5rem;
+        }
+
+        .value-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .value-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--cream);
+        }
+
+        .value-list-icon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            margin-top: 1px;
+            color: var(--gold);
+        }
+
+        .value-cards {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: var(--spacing-2xl);
-            margin-top: var(--spacing-3xl);
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--border);
         }
 
         .value-card {
-            background: white;
-            padding: var(--spacing-2xl);
-            border-radius: var(--radius-xl);
-            border: 1px solid var(--slate-200);
+            background: var(--near-black);
+            padding: 2.5rem 2rem;
+            text-align: center;
         }
 
-        .value-card-header {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-lg);
-            margin-bottom: var(--spacing-lg);
+        .value-card-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            font-weight: 300;
+            color: var(--gold-light);
+            display: block;
+            line-height: 1;
+            margin-bottom: 0.5rem;
         }
 
-        .value-number {
-            width: 40px;
-            height: 40px;
-            background: var(--navy-900);
-            color: white;
-            border-radius: var(--radius-md);
+        .value-card-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        /* ── CATEGORIES ──────────────────────────── */
+        .categories-section {
+            padding: 8rem 3rem;
+            background: var(--near-black);
+            position: relative;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 4rem auto 0;
+        }
+
+        .category-card {
+            padding: 2.5rem 1.75rem;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.35s ease;
+        }
+
+        .category-card:hover {
+            border-color: var(--gold);
+            background: rgba(201,168,76,0.04);
+            transform: translateY(-4px);
+        }
+
+        .category-icon {
+            font-size: 2rem;
+            margin-bottom: 1.25rem;
+            display: block;
+        }
+
+        .category-card h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--cream);
+            margin-bottom: 0.75rem;
+        }
+
+        .category-card p {
+            font-size: 0.65rem;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            line-height: 1.9;
+            text-transform: uppercase;
+        }
+
+        .category-arrow {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-family: 'Space Grotesk', sans-serif;
+            color: var(--gold);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
         }
 
-        .value-card h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--navy-900);
+        .category-card:hover .category-arrow {
+            background: var(--gold);
+            color: var(--black);
+            border-color: var(--gold);
         }
 
-        .value-card p {
-            color: var(--slate-500);
-            line-height: 1.7;
-        }
-
-        /* Pricing Section */
-        .pricing-section {
-            padding: 6rem var(--spacing-xl);
-            background: white;
-        }
-
-        .pricing-container {
-            max-width: 1280px;
-            margin: 0 auto;
-        }
-
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: var(--spacing-xl);
-            margin-top: var(--spacing-3xl);
-        }
-
-        .pricing-card {
-            background: white;
-            border: 2px solid var(--slate-200);
-            border-radius: var(--radius-xl);
-            padding: var(--spacing-2xl);
-            position: relative;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .pricing-card:hover {
-            border-color: var(--blue-600);
-            box-shadow: var(--shadow-xl);
-            transform: translateY(-8px);
-        }
-
-        .pricing-card.featured {
-            border-color: var(--blue-600);
-            box-shadow: var(--shadow-lg);
-            background: linear-gradient(180deg, var(--white) 0%, var(--slate-50) 100%);
-        }
-
-        .pricing-badge {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--blue-600);
-            color: white;
-            padding: var(--spacing-xs) var(--spacing-lg);
-            border-radius: 100px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .pricing-card h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--navy-900);
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .pricing-card .plan-description {
-            font-size: 0.875rem;
-            color: var(--slate-500);
-            margin-bottom: var(--spacing-xl);
-        }
-
-        .pricing-price {
-            margin-bottom: var(--spacing-xl);
-        }
-
-        .price-amount {
-            font-size: 3rem;
-            font-weight: 700;
-            color: var(--navy-900);
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        .price-period {
-            color: var(--slate-500);
-            font-size: 1rem;
-        }
-
-        .pricing-features {
-            list-style: none;
-            margin-bottom: var(--spacing-xl);
-        }
-
-        .pricing-features li {
-            display: flex;
-            align-items: flex-start;
-            gap: var(--spacing-md);
-            padding: var(--spacing-md) 0;
-            color: var(--slate-500);
-        }
-
-        .pricing-features svg {
-            flex-shrink: 0;
-            color: var(--blue-600);
-            margin-top: 2px;
-        }
-
-        /* CTA Section */
+        /* ── CTA ───────────────────────────────── */
         .cta-section {
-            background: var(--navy-900);
-            color: white;
-            padding: 6rem var(--spacing-xl);
+            padding: 10rem 3rem;
+            background: var(--black);
             position: relative;
             overflow: hidden;
         }
 
-        .cta-section::before {
-            content: '';
+        .cta-bg {
             position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 1440px;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
-            pointer-events: none;
+            inset: 0;
+            background: radial-gradient(ellipse 80% 100% at 50% 100%, rgba(201,168,76,0.1) 0%, transparent 60%);
         }
 
-        .cta-container {
-            max-width: 1280px;
+        .cta-inner {
+            max-width: 900px;
             margin: 0 auto;
             text-align: center;
             position: relative;
             z-index: 1;
         }
 
+        .cta-crown {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 2rem;
+        }
+
         .cta-section h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: var(--spacing-lg);
-            color: white;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 300;
+            color: var(--cream);
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-section h2 em {
+            font-style: italic;
+            color: var(--gold-light);
         }
 
         .cta-section p {
-            font-size: 1.25rem;
-            color: var(--slate-300);
-            max-width: 640px;
-            margin: 0 auto var(--spacing-2xl);
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            line-height: 2;
+            max-width: 560px;
+            margin: 0 auto 3.5rem;
         }
 
         .cta-buttons {
             display: flex;
-            gap: var(--spacing-md);
+            gap: 1rem;
             justify-content: center;
-            flex-wrap: wrap;
         }
 
-        .btn-white {
-            background: white;
-            color: var(--navy-900);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-white:hover {
-            background: var(--slate-100);
-            transform: translateY(-1px);
-        }
-
-        .btn-outline-white {
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            background: transparent;
-        }
-
-        .btn-outline-white:hover {
-            border-color: white;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Footer */
+        /* ── FOOTER ────────────────────────────── */
         footer {
-            background: var(--navy-900);
-            color: white;
-            padding: 4rem var(--spacing-xl) 2rem;
+            background: var(--near-black);
+            padding: 5rem 3rem 2.5rem;
+            border-top: 1px solid var(--border);
         }
 
-        .footer-container {
-            max-width: 1280px;
+        .footer-inner {
+            max-width: 1200px;
             margin: 0 auto;
         }
 
         .footer-top {
             display: grid;
-            grid-template-columns: 2fr repeat(3, 1fr);
-            gap: var(--spacing-3xl);
-            margin-bottom: var(--spacing-3xl);
-            padding-bottom: var(--spacing-3xl);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 4rem;
+            padding-bottom: 4rem;
+            border-bottom: 1px solid var(--border);
         }
 
         .footer-brand p {
-            color: var(--slate-300);
-            line-height: 1.7;
-            margin-top: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .footer-section h4 {
-            font-size: 0.875rem;
-            font-weight: 600;
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            line-height: 2;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: var(--spacing-lg);
-            color: white;
-        }
-
-        .footer-links {
-            list-style: none;
-        }
-
-        .footer-links li {
-            margin-bottom: var(--spacing-md);
-        }
-
-        .footer-links a {
-            color: var(--slate-300);
-            text-decoration: none;
-            font-size: 0.9375rem;
-            transition: color 0.2s ease;
-        }
-
-        .footer-links a:hover {
-            color: white;
+            margin-top: 1.25rem;
+            max-width: 300px;
         }
 
         .social-links {
             display: flex;
-            gap: var(--spacing-md);
-            margin-top: var(--spacing-lg);
+            gap: 0.75rem;
+            margin-top: 1.5rem;
         }
 
         .social-link {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-md);
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: var(--text-muted);
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
         }
 
         .social-link:hover {
-            background: var(--blue-600);
-            transform: translateY(-2px);
+            border-color: var(--gold);
+            color: var(--gold);
         }
+
+        .footer-col h4 {
+            font-size: 0.6rem;
+            font-weight: 600;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover { color: var(--cream); }
 
         .footer-bottom {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: var(--slate-400);
-            font-size: 0.875rem;
+            color: var(--text-dim);
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
         }
 
-        .footer-bottom-links {
-            display: flex;
-            gap: var(--spacing-xl);
-        }
-
-        .footer-bottom-links a {
-            color: var(--slate-400);
+        .footer-bottom a {
+            color: var(--text-dim);
             text-decoration: none;
             transition: color 0.2s ease;
         }
 
-        .footer-bottom-links a:hover {
-            color: white;
+        .footer-bottom a:hover { color: var(--text-muted); }
+
+        .footer-bottom-right {
+            display: flex;
+            gap: 2rem;
         }
 
-        /* Responsive Design */
+        /* ── RESPONSIVE ────────────────────────── */
         @media (max-width: 1024px) {
-            .features-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .pricing-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-top {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .categories-grid { grid-template-columns: repeat(2, 1fr); }
+            .value-inner { grid-template-columns: 1fr; gap: 4rem; }
+            .footer-top { grid-template-columns: 1fr 1fr; gap: 3rem; }
         }
 
         @media (max-width: 768px) {
-            .header-container {
-                padding: 0 var(--spacing-lg);
-            }
-
-            .main-nav,
-            .auth-buttons {
-                display: none;
-            }
-
-            .mobile-menu-btn {
-                display: block;
-            }
-
-            .mobile-menu,
-            .mobile-overlay {
-                display: flex;
-            }
-
-            .hero {
-                padding: 4rem var(--spacing-lg) 5rem;
-            }
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-
-            .hero-subtitle {
-                font-size: 1.125rem;
-            }
-
-            .hero-stats {
-                flex-wrap: wrap;
-                gap: var(--spacing-xl);
-            }
-
-            .section-title {
-                font-size: 2rem;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .value-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-top {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-bottom {
-                flex-direction: column;
-                gap: var(--spacing-lg);
-                text-align: center;
-            }
-
-            .footer-bottom-links {
-                flex-direction: column;
-                gap: var(--spacing-md);
-            }
+            header { padding: 0 1.5rem; }
+            .main-nav, .auth-buttons { display: none; }
+            .mobile-menu-btn { display: block; }
+            .hero { padding: 7rem 1.5rem 5rem; }
+            .stats-strip { flex-direction: column; gap: 0; }
+            .stat-item { border: none; border-top: 1px solid var(--border); }
+            .features-grid { grid-template-columns: 1fr; }
+            .feature-card { border-right: none; }
+            .feature-card:nth-child(n+4) { border-bottom: 1px solid var(--border); }
+            .feature-card:last-child { border-bottom: none; }
+            .categories-grid { grid-template-columns: 1fr 1fr; }
+            .footer-top { grid-template-columns: 1fr; gap: 2.5rem; }
+            .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
+            .footer-bottom-right { flex-direction: column; gap: 0.75rem; align-items: center; }
+            .value-cards { grid-template-columns: 1fr 1fr; }
+            .cta-buttons { flex-direction: column; align-items: center; }
         }
 
-        /* Smooth Scroll */
-        html {
-            scroll-behavior: smooth;
+        /* ── ANIMATIONS ────────────────────────── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
         }
 
-        .animate-fade-in-up {
-            animation: fadeInUp 0.6s ease-out backwards;
+        .fade-up {
+            opacity: 0;
+            animation: fadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
 
-        .delay-100 { animation-delay: 0.1s; }
-        .delay-200 { animation-delay: 0.2s; }
-        .delay-300 { animation-delay: 0.3s; }
-        .delay-400 { animation-delay: 0.4s; }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.25s; }
+        .delay-3 { animation-delay: 0.4s; }
+        .delay-4 { animation-delay: 0.55s; }
+        .delay-5 { animation-delay: 0.7s; }
+
+        .gold-shimmer {
+            background: linear-gradient(90deg, var(--gold-light) 0%, var(--gold-pale) 40%, var(--gold-light) 60%, var(--gold) 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 4s linear infinite;
+        }
     </style>
 </head>
 <body>
-    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileMenu()"></div>
 
-    <header id="header">
-        <div class="header-container">
-            <a href="#home" class="logo">
-                <div class="logo-mark">J</div>
-                <span>JudgingSystem</span>
-            </a>
-            <nav class="main-nav">
-                <a href="#home" class="nav-link active">Home</a>
-                <a href="#features" class="nav-link">Features</a>
-                <a href="#pricing" class="nav-link">Pricing</a>
-                <a href="#about" class="nav-link">About</a>
-                <a href="#contact" class="nav-link">Contact</a>
-            </nav>
-            <div class="auth-buttons">
-                <a href="/login" class="btn btn-ghost">Sign In</a>
-                <a href="/register" class="btn btn-primary">Get Started</a>
-            </div>
-            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
-                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-            </button>
-        </div>
-    </header>
-
+    <!-- Mobile menu -->
     <div class="mobile-menu" id="mobileMenu">
-        <a href="#home" class="mobile-nav-link" onclick="toggleMobileMenu()">Home</a>
-        <a href="#features" class="mobile-nav-link" onclick="toggleMobileMenu()">Features</a>
-        <a href="#pricing" class="mobile-nav-link" onclick="toggleMobileMenu()">Pricing</a>
-        <a href="#about" class="mobile-nav-link" onclick="toggleMobileMenu()">About</a>
-        <a href="#contact" class="mobile-nav-link" onclick="toggleMobileMenu()">Contact</a>
-        <div class="mobile-auth">
-            <a href="/login" class="btn btn-ghost">Sign In</a>
-            <a href="/register" class="btn btn-primary">Get Started</a>
-        </div>
+        <button class="mobile-close" onclick="closeMobile()">✕</button>
+        <a href="#home" class="nav-link" onclick="closeMobile()">Home</a>
+        <a href="#features" class="nav-link" onclick="closeMobile()">Features</a>
+        <a href="#categories" class="nav-link" onclick="closeMobile()">Categories</a>
+        <a href="#about" class="nav-link" onclick="closeMobile()">About</a>
+        <a href="#contact" class="nav-link" onclick="closeMobile()">Contact</a>
+        <a href="/register" class="btn btn-gold btn-large" onclick="closeMobile()">Get Started</a>
     </div>
 
+    <header id="header">
+        <a href="#home" class="logo">
+            <span class="logo-crown">♛</span>
+            <span class="logo-text">Crown</span>
+        </a>
+        <nav class="main-nav">
+            <a href="#home" class="nav-link">Home</a>
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#categories" class="nav-link">Categories</a>
+            <div class="nav-divider"></div>
+            <a href="#contact" class="nav-link">Contact</a>
+        </nav>
+        <div class="auth-buttons">
+            <a href="/login" class="btn btn-ghost">Sign In</a>
+            <a href="/register" class="btn btn-gold">Get Started</a>
+        </div>
+        <button class="mobile-menu-btn" onclick="openMobile()">
+            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8h16M4 16h16"/>
+            </svg>
+        </button>
+    </header>
+
+    <!-- ── HERO ── -->
     <section class="hero" id="home">
-        <div class="hero-container">
-            <div class="hero-content">
-                <div class="hero-badge animate-fade-in-up">
-                    <div class="hero-badge-dot"></div>
-                    <span>Trusted by 10,000+ Organizations</span>
-                </div>
-                <h1 class="animate-fade-in-up delay-100">Enterprise Competition Management Platform</h1>
-                <p class="hero-subtitle animate-fade-in-up delay-200">
-                    Streamline your competition workflow with professional-grade judging tools, 
-                    real-time collaboration, and comprehensive analytics. Built for organizations 
-                    that demand excellence.
-                </p>
-                <div class="hero-cta animate-fade-in-up delay-300">
-                    <a href="/register" class="btn btn-blue btn-large">Start Free Trial</a>
-                    <a href="#features" class="btn btn-outline btn-large">Watch Demo</a>
-                </div>
-                <div class="hero-stats animate-fade-in-up delay-400">
-                    <div class="hero-stat">
-                        <div class="hero-stat-value">10K+</div>
-                        <div class="hero-stat-label">Competitions</div>
-                    </div>
-                    <div class="hero-stat">
-                        <div class="hero-stat-value">50K+</div>
-                        <div class="hero-stat-label">Active Judges</div>
-                    </div>
-                    <div class="hero-stat">
-                        <div class="hero-stat-value">98%</div>
-                        <div class="hero-stat-label">Satisfaction</div>
-                    </div>
-                    <div class="hero-stat">
-                        <div class="hero-stat-value">24/7</div>
-                        <div class="hero-stat-label">Support</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+        <div class="hero-bg"></div>
+        <div class="hero-arc hero-arc-1"></div>
+        <div class="hero-arc hero-arc-2"></div>
+        <div class="hero-arc hero-arc-3"></div>
+        <div class="hero-line hero-line-left"></div>
+        <div class="hero-line hero-line-right"></div>
 
-    <section class="trust-section">
-        <div class="trust-container">
-            <div class="trust-label">Trusted by industry leaders</div>
-            <div class="trust-logos">
-                <svg class="trust-logo" width="120" height="32" viewBox="0 0 120 32" fill="currentColor">
-                    <text x="0" y="24" font-family="Space Grotesk, sans-serif" font-size="20" font-weight="600">Company</text>
-                </svg>
-                <svg class="trust-logo" width="120" height="32" viewBox="0 0 120 32" fill="currentColor">
-                    <text x="0" y="24" font-family="Space Grotesk, sans-serif" font-size="20" font-weight="600">Enterprise</text>
-                </svg>
-                <svg class="trust-logo" width="120" height="32" viewBox="0 0 120 32" fill="currentColor">
-                    <text x="0" y="24" font-family="Space Grotesk, sans-serif" font-size="20" font-weight="600">Global Inc</text>
-                </svg>
-                <svg class="trust-logo" width="120" height="32" viewBox="0 0 120 32" fill="currentColor">
-                    <text x="0" y="24" font-family="Space Grotesk, sans-serif" font-size="20" font-weight="600">Partners</text>
-                </svg>
+        <div class="hero-content">
+            <div class="hero-eyebrow fade-up delay-1">
+                <div class="eyebrow-line"></div>
+                <span class="eyebrow-text"> Judging System</span>
+                <div class="eyebrow-line"></div>
             </div>
-        </div>
-    </section>
 
-    <section class="features-section" id="features">
-        <div class="features-container">
-            <div class="section-header">
-                <div class="section-label">Features</div>
-                <h2 class="section-title">Everything you need to run competitions</h2>
-                <p class="section-description">
-                    Comprehensive tools designed for judges, participants, and administrators to 
-                    deliver fair, transparent, and efficient competition management.
-                </p>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <h3>Intuitive Judging Interface</h3>
-                    <p>
-                        Purpose-built scoring tools with customizable criteria, real-time collaboration, 
-                        and automated calculations ensure consistent, fair evaluations across all judges.
-                    </p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                    </div>
-                    <h3>Advanced Analytics</h3>
-                    <p>
-                        Comprehensive reporting and data visualization tools provide deep insights into 
-                        scoring patterns, judge performance, and competition outcomes.
-                    </p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                        </svg>
-                    </div>
-                    <h3>Enterprise Security</h3>
-                    <p>
-                        Bank-level encryption, SOC 2 compliance, role-based access control, and 
-                        comprehensive audit trails keep your data secure and confidential.
-                    </p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                    </div>
-                    <h3>Real-Time Updates</h3>
-                    <p>
-                        Live scoring updates, instant notifications, and synchronized dashboards ensure 
-                        all stakeholders stay informed throughout the competition process.
-                    </p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                    </div>
-                    <h3>Custom Workflows</h3>
-                    <p>
-                        Flexible configuration options adapt to your unique judging criteria, scoring 
-                        methods, and competition formats with zero compromise.
-                    </p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                        </svg>
-                    </div>
-                    <h3>Unlimited Scalability</h3>
-                    <p>
-                        Whether you're managing 10 or 10,000 participants, our cloud infrastructure 
-                        scales seamlessly to meet your needs without performance degradation.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
+            <h1 class="fade-up delay-2">
+                Where <em>Elegance</em><br>Meets Precision
+            </h1>
 
-    <section class="value-props" id="about">
-        <div class="value-props-container">
-            <div class="section-header">
-                <div class="section-label">Why Choose Us</div>
-                <h2 class="section-title">Built for professional organizations</h2>
-                <p class="section-description">
-                    Founded by competition organizers and judges, we understand the challenges of 
-                    managing large-scale events and have built solutions that address them.
-                </p>
-            </div>
-            <div class="value-grid">
-                <div class="value-card">
-                    <div class="value-card-header">
-                        <div class="value-number">1</div>
-                        <h3>Proven at Scale</h3>
-                    </div>
-                    <p>
-                        Over 10,000 competitions hosted and 50,000+ judges trained on our platform. 
-                        Our track record speaks for itself with a 98% satisfaction rate and industry-leading 
-                        retention metrics.
-                    </p>
-                </div>
-                <div class="value-card">
-                    <div class="value-card-header">
-                        <div class="value-number">2</div>
-                        <h3>Expert Support</h3>
-                    </div>
-                    <p>
-                        Dedicated account managers, 24/7 technical support, and comprehensive onboarding 
-                        ensure your team is successful from day one. Average response time under 2 hours.
-                    </p>
-                </div>
-                <div class="value-card">
-                    <div class="value-card-header">
-                        <div class="value-number">3</div>
-                        <h3>Continuous Innovation</h3>
-                    </div>
-                    <p>
-                        Regular feature updates driven by customer feedback. Our product roadmap is shaped 
-                        by the real needs of competition organizers worldwide.
-                    </p>
-                </div>
-                <div class="value-card">
-                    <div class="value-card-header">
-                        <div class="value-number">4</div>
-                        <h3>Transparent Pricing</h3>
-                    </div>
-                    <p>
-                        No hidden fees, no per-user charges, no surprises. Pay for what you need with 
-                        flexible plans that grow with your organization.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="pricing-section" id="pricing">
-        <div class="pricing-container">
-            <div class="section-header">
-                <div class="section-label">Pricing</div>
-                <h2 class="section-title">Plans designed for every organization</h2>
-                <p class="section-description">
-                    Start free and scale as you grow. All plans include core features with no hidden fees.
-                </p>
-            </div>
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h3>Starter</h3>
-                    <p class="plan-description">Perfect for small competitions and pilot programs</p>
-                    <div class="pricing-price">
-                        <span class="price-amount">$29</span>
-                        <span class="price-period">/month</span>
-                    </div>
-                    <ul class="pricing-features">
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Up to 5 competitions</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>10 judges per competition</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>100 participants</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Basic analytics & reporting</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Email support</span>
-                        </li>
-                    </ul>
-                    <a href="/register" class="btn btn-outline btn-large" style="width: 100%;">Get Started</a>
-                </div>
-                <div class="pricing-card featured">
-                    <div class="pricing-badge">Most Popular</div>
-                    <h3>Professional</h3>
-                    <p class="plan-description">Best for growing organizations and regular events</p>
-                    <div class="pricing-price">
-                        <span class="price-amount">$79</span>
-                        <span class="price-period">/month</span>
-                    </div>
-                    <ul class="pricing-features">
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Unlimited competitions</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Unlimited judges</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Up to 500 participants</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Advanced analytics & insights</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Priority support</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Custom branding</span>
-                        </li>
-                    </ul>
-                    <a href="/register" class="btn btn-blue btn-large" style="width: 100%;">Get Started</a>
-                </div>
-                <div class="pricing-card">
-                    <h3>Enterprise</h3>
-                    <p class="plan-description">For large organizations with complex requirements</p>
-                    <div class="pricing-price">
-                        <span class="price-amount" style="font-size: 2rem;">Custom</span>
-                    </div>
-                    <ul class="pricing-features">
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Everything in Professional</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Unlimited participants</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>White-label solution</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Dedicated account manager</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>24/7 phone support</span>
-                        </li>
-                        <li>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                            <span>Custom integrations & API</span>
-                        </li>
-                    </ul>
-                    <a href="#contact" class="btn btn-outline btn-large" style="width: 100%;">Contact Sales</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="cta-section" id="contact">
-        <div class="cta-container">
-            <h2>Ready to transform your competitions?</h2>
-            <p>
-                Join thousands of organizations worldwide who trust JudgingSystem for fair, 
-                efficient, and transparent competition management.
+            <p class="hero-subtitle fade-up delay-3">
+                The definitive judging platform for beauty pageants, talent competitions,<br>
+                and cultural events. Professional. Transparent. Dignified.
             </p>
-            <div class="cta-buttons">
-                <a href="/register" class="btn btn-white btn-large">Start Free Trial</a>
-                <a href="mailto:sales@judgingsystem.com" class="btn btn-outline-white btn-large">Contact Sales</a>
+
+            <div class="hero-cta fade-up delay-4">
+                <a href="/register" class="btn btn-gold btn-large">Begin Your Event</a>
+                <a href="#features" class="btn btn-outline-gold btn-large">Explore Platform</a>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-strip fade-up delay-5">
+                <div class="stat-item">
+                    <span class="stat-value">2,400+</span>
+                    <span class="stat-label">Pageants Held</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">18K+</span>
+                    <span class="stat-label">Contestants Scored</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">140+</span>
+                    <span class="stat-label">Countries</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">99.9%</span>
+                    <span class="stat-label">Uptime</span>
+                </div>
             </div>
         </div>
     </section>
 
+    <!-- ── FEATURES ── -->
+    <section class="features-section" id="features">
+        
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-number">01</div>
+                <div class="feature-icon-wrap">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+                    </svg>
+                </div>
+                <h3>Scoring Criteria Builder</h3>
+                <p>Design custom scoring rubrics for evening gown, swimwear, talent, interview, and Q&A segments. Weighted percentages calculated automatically.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-number">02</div>
+                <div class="feature-icon-wrap">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+                    </svg>
+                </div>
+                <h3>Judge Panel Management</h3>
+                <p>Onboard celebrity judges, industry professionals, and community leaders with role-based access and individual scoring dashboards.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-number">03</div>
+                <div class="feature-icon-wrap">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+                    </svg>
+                </div>
+                <h3>Live Leaderboard</h3>
+                <p>Real-time rankings updated per segment. Display results on stage screens with elegant, branded overlays and transition animations.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-number">04</div>
+                <div class="feature-icon-wrap">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                    </svg>
+                </div>
+                <h3>Conflict of Interest Guard</h3>
+                <p>Automatic detection when judges are related to contestants. Score masking and blind judging modes ensure integrity at every stage.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-number">05</div>
+                <div class="feature-icon-wrap">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                    </svg>
+                </div>
+                <h3>Official Score Sheets</h3>
+                <p>Generate notarized, watermarked PDF scorecards for every contestant. Accepted by national and international pageant federations.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-number">06</div>
+                <div class="feature-icon-wrap">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 8.25h3m-3 3h3m-6 3h.008v.008H6.75V15zm0-3h.008v.008H6.75V12zm0-3h.008v.008H6.75V9z"/>
+                    </svg>
+                </div>
+                <h3>Contestant Profiles</h3>
+                <p>Rich media profiles with photo galleries, platform statements, biographical data, and social media links — accessible to judges before scoring.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── VALUE / ABOUT ── -->
+    <section class="value-section" id="about">
+        <div class="value-inner">
+          
+          
+        </div>
+    </section>
+
+    <!-- ── CATEGORIES ── -->
+    <section class="categories-section" id="categories">
+        <div class="section-header">
+            <div class="section-label">Event Types</div>
+            <h2 class="section-title">Every stage. <em>Every crown.</em></h2>
+            <p class="section-description">Designed for all pageant formats — from local beauty titles to prestigious national competitions.</p>
+        </div>
+
+        <div class="categories-grid">
+            <div class="category-card">
+                <span class="category-icon">👑</span>
+                <h3>Beauty Pageants</h3>
+                <p>Miss, Mrs., Mister categories with full segment support including preliminary rounds.</p>
+                <div class="category-arrow">→</div>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">🎭</span>
+                <h3>Talent Shows</h3>
+                <p>Scoring rubrics for singing, dancing, acting, and multi-discipline performances.</p>
+                <div class="category-arrow">→</div>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">🌺</span>
+                <h3>Cultural Festivals</h3>
+                <p>Ethnic, folk, and heritage competitions with culturally sensitive criteria frameworks.</p>
+                <div class="category-arrow">→</div>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">🎓</span>
+                <h3>Academic Events</h3>
+                <p>School-level pageants, recognition days, and youth leadership competitions.</p>
+                <div class="category-arrow">→</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── CTA ── -->
+    <section class="cta-section" id="contact">
+        <div class="cta-bg"></div>
+        <div class="cta-inner">
+            <span class="cta-crown">♛</span>
+            <h2>The stage is set.<br>Let the <em>judging begin.</em></h2>
+            <p>Join hundreds of pageant organizers who run their events with confidence, clarity, and elegance.</p>
+            <div class="cta-buttons">
+                <a href="/register" class="btn btn-gold btn-large">Start Free Trial</a>
+                <a href="mailto:hello@crownplatform.com" class="btn btn-outline-gold btn-large">Contact Our Team</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── FOOTER ── -->
     <footer>
-        <div class="footer-container">
+        <div class="footer-inner">
             <div class="footer-top">
                 <div class="footer-brand">
                     <div class="logo">
-                        <div class="logo-mark">J</div>
-                        <span>JudgingSystem</span>
+                        <span class="logo-crown" style="color:var(--gold)">♛</span>
+                        <span class="logo-text">Crown</span>
                     </div>
-                    <p>
-                        Professional competition management platform trusted by organizations worldwide.
-                    </p>
+                    <p>The professional judging platform built exclusively for beauty pageants, talent competitions, and cultural events worldwide.</p>
                     <div class="social-links">
-                        <a href="#" class="social-link" aria-label="LinkedIn">
-                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                            </svg>
-                        </a>
-                        <a href="#" class="social-link" aria-label="Twitter">
-                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
-                            </svg>
-                        </a>
-                        <a href="#" class="social-link" aria-label="GitHub">
-                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                            </svg>
-                        </a>
+                        <a href="#" class="social-link" aria-label="Facebook">f</a>
+                        <a href="#" class="social-link" aria-label="Instagram">ig</a>
+                        <a href="#" class="social-link" aria-label="Twitter">tw</a>
                     </div>
                 </div>
-                <div class="footer-section">
-                    <h4>Product</h4>
+                <div class="footer-col">
+                    <h4>Platform</h4>
                     <ul class="footer-links">
                         <li><a href="#features">Features</a></li>
-                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#categories">Event Types</a></li>
                         <li><a href="#">Integrations</a></li>
                         <li><a href="#">Changelog</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-col">
                     <h4>Company</h4>
                     <ul class="footer-links">
                         <li><a href="#about">About</a></li>
                         <li><a href="#">Careers</a></li>
                         <li><a href="#">Blog</a></li>
-                        <li><a href="#">Press</a></li>
+                        <li><a href="#">Press Kit</a></li>
                     </ul>
                 </div>
-                <div class="footer-section">
+                <div class="footer-col">
                     <h4>Support</h4>
                     <ul class="footer-links">
                         <li><a href="#">Help Center</a></li>
                         <li><a href="#">Documentation</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                        <li><a href="#">Status</a></li>
+                        <li><a href="#contact">Contact Us</a></li>
+                        <li><a href="#">System Status</a></li>
                     </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <div>&copy; 2026 JudgingSystem. All rights reserved.</div>
-                <div class="footer-bottom-links">
+                <div>© 2026 Crown Pageant Platform. All rights reserved.</div>
+                <div class="footer-bottom-right">
                     <a href="#">Privacy Policy</a>
                     <a href="#">Terms of Service</a>
                     <a href="#">Cookie Policy</a>
@@ -1454,61 +1209,48 @@
     </footer>
 
     <script>
-        // Header scroll effect
         const header = document.getElementById('header');
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 20) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
+            header.classList.toggle('scrolled', window.scrollY > 30);
         });
 
-        // Mobile menu toggle
-        function toggleMobileMenu() {
-            const mobileMenu = document.getElementById('mobileMenu');
-            const mobileOverlay = document.getElementById('mobileOverlay');
-            mobileMenu.classList.toggle('active');
-            mobileOverlay.classList.toggle('active');
+        function openMobile() {
+            document.getElementById('mobileMenu').classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                const href = this.getAttribute('href');
-                if (href !== '#') {
+        function closeMobile() {
+            document.getElementById('mobileMenu').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                const href = a.getAttribute('href');
+                if (href === '#') return;
+                const target = document.querySelector(href);
+                if (target) {
                     e.preventDefault();
-                    const target = document.querySelector(href);
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             });
         });
 
-        // Update active nav link on scroll
-        const sections = document.querySelectorAll('section[id]');
-        const navLinks = document.querySelectorAll('.nav-link');
-        
-        window.addEventListener('scroll', () => {
-            let current = '';
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                const sectionHeight = section.clientHeight;
-                if (scrollY >= (sectionTop - 200)) {
-                    current = section.getAttribute('id');
+        // Intersection observer for feature cards
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
                 }
             });
+        }, { threshold: 0.1 });
 
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === `#${current}`) {
-                    link.classList.add('active');
-                }
-            });
+        document.querySelectorAll('.feature-card, .category-card').forEach((el, i) => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = `opacity 0.7s ease ${i * 0.08}s, transform 0.7s ease ${i * 0.08}s`;
+            observer.observe(el);
         });
     </script>
 </body>
