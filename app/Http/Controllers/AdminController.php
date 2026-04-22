@@ -60,9 +60,12 @@ class AdminController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'event_status' => 'required|in:upcoming,ongoing,completed',
+            'anonymous_judging' => 'nullable|boolean',
+            'anonymity_level' => 'nullable|in:full,partial',
         ]);
 
         $validated['created_by'] = Auth::id();
+        $validated['anonymous_judging'] = $request->has('anonymous_judging');
 
         Event::create($validated);
 
@@ -81,7 +84,11 @@ class AdminController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'event_status' => 'required|in:upcoming,ongoing,completed',
+            'anonymous_judging' => 'nullable|boolean',
+            'anonymity_level' => 'nullable|in:full,partial',
         ]);
+
+        $validated['anonymous_judging'] = $request->has('anonymous_judging');
 
         $event->update($validated);
 
@@ -98,7 +105,7 @@ class AdminController extends Controller
      * List all participant submissions that need approval.
      */
     public function participants(Request $request) {
-        $status = $request->get('status', 'pending');
+$status = $request->get('status', 'reviewed');
         
         $submissions = Submission::with(['participant', 'event'])
             ->when($status !== 'all', function ($query) use ($status) {
@@ -162,5 +169,13 @@ class AdminController extends Controller
 
         return redirect()->route('admin.participants.index')
             ->with('success', 'Submission deleted successfully.');
+    }
+
+    /**
+     * Display participant submission details.
+     */
+    public function showParticipant(Submission $submission) {
+        $submission->load(['participant', 'event']);
+        return view('admin.participants.show', compact('submission'));
     }
 }

@@ -454,7 +454,7 @@
         <!-- Sidebar -->
         <aside class="participant-sidebar" id="participantSidebar">
             <div class="sidebar-logo">
-                <h2>{{ config('app.name', 'participant') }}</h2>
+                <h2>Participants</h2>
                
             </div>
 
@@ -472,17 +472,19 @@
                     <span>Events</span>
                 </a>
 
+                <a href="{{ route('participant.score.index') }}" class="sidebar-nav-link {{ request()->routeIs('participant.score.*') ? 'active' : '' }}">
+                    <i class="bi bi-calendar-event-fill"></i>
+                    <span>Score</span>
+                </a>
+
 
                 <div class="nav-section-title">Settings</div>
-                <a href="{{ route('profile.edit') }}" class="sidebar-nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+                <a href="{{ route('participant.settings') }}" class="sidebar-nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
                     <i class="bi bi-person-circle"></i>
                     <span>Profile</span>
                 </a>
 
-                <a href="{{ route('participant.settings') }}" class="sidebar-nav-link {{ request()->routeIs('participant.settings') ? 'active' : '' }}">
-                    <i class="bi bi-gear-fill"></i>
-                    <span>Settings</span>
-                </a>
+
 
                 <a href="#" class="sidebar-nav-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <i class="bi bi-box-arrow-right"></i>

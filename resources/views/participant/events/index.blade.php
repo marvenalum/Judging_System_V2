@@ -75,7 +75,7 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($events as $event)
+                                  @forelse($events as $event)
                                     <tr class="hover:bg-gray-50 transition-colors duration-150">
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
@@ -130,13 +130,45 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                                     </svg>
                                                 </a>
-                                                @if($event->hasApplied($userId))
-                                                    <span class="inline-flex items-center px-3 py-1.5 bg-green-100 text-green-700 rounded-md cursor-default" title="Already Applied">
+                                           @if(!$user->hasCompleteProfile())
+                                                    <a href="{{ route('participant.settings') }}" 
+                                                       class="inline-flex items-center px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded-md transition-colors duration-150 font-medium"
+                                                       title="Complete Profile First">
                                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                                                         </svg>
-                                                        Applied
-                                                    </span>
+                                                        Complete Profile
+                                                    </a>
+                                                @php
+                                                    $application = $event->submissions->first();
+                                                    $status = $application?->status ?? null;
+                                                    $statusLabel = match($status) {
+                                                        'reviewed' => 'Accepted',
+                                                        'draft' => 'Declined',
+                                                        'pending', 'under_review', 'submitted' => 'Pending Review',
+                                                        default => 'Applied'
+                                                    };
+                                                    $statusColor = match($status) {
+                                                        'reviewed' => 'bg-green-100 text-green-700',
+                                                        'draft' => 'bg-red-100 text-red-700',
+                                                        'pending', 'under_review', 'submitted' => 'bg-yellow-100 text-yellow-800',
+                                                        default => 'bg-blue-100 text-blue-700'
+                                                    };
+                                                    $statusIcon = match($status) {
+                                                        'reviewed' => 'M5 13l4 4L19 7',
+                                                        'draft' => 'M6 18L18 6M6 6l12 12',
+                                                        'pending', 'under_review', 'submitted' => 'M12 8v4l3.586 3.586M18 10a6 6 0 01-12 0',
+                                                        default => 'M9 5l7 7-7 7'
+                                                    };
+                                                @endphp
+                                                    @if($application)
+                                                        <span class="inline-flex items-center px-3 py-1.5 {{ $statusColor }} rounded-md cursor-default" title="Application Status: {{ ucfirst(str_replace('_', ' ', $status ?? 'unknown')) }}">
+                                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $statusIcon }}"/>
+                                                            </svg>
+                                                            {{ $statusLabel }}
+                                                        </span>
+                                                    @endif
                                                 @else
                                                     <form method="POST" action="{{ route('participant.event.apply', $event) }}" class="inline-block">
                                                         @csrf

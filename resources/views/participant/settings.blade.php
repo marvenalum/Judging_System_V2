@@ -1,10 +1,10 @@
-<x-participant-layout>
+<x-app-sidebar>
     <x-slot name="header">
-        <h2 class="page-title">Settings</h2>
-        <p class="page-subtitle">Manage your account settings and preferences</p>
+        <h2 class="page-title">Participant Account</h2>
+        <p class="page-subtitle">Manage your account </p>
     </x-slot>
 
-    <!-- Settings Styles -->
+
     <style>
         :root {
             --color-ocean: #0a4d68;
@@ -91,10 +91,10 @@
             border-radius: 12px;
             font-size: 1rem;
             transition: all 0.3s;
-            background: #f9f            cursor: pointer;
+            background: #f9fafb;
+            cursor: pointer;
         }
-       afb;
- .form-select:focus {
+        .form-select:focus {
             outline: none;
             border-color: var(--color-ocean);
             background: white;
@@ -179,13 +179,36 @@
 
     <div class="settings-container">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Settings Header -->
-            <div class="settings-header">
-                <div class="settings-content">
-                    <h1 class="settings-title">Account Settings ⚙️</h1>
-                    <p class="settings-subtitle">Manage your profile, preferences, and notification settings.</p>
+                <!-- Flash Messages -->
+                @if (session('success'))
+                    <div class="bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-xl mb-6 shadow-sm">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl mb-6 shadow-sm">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl mb-6 shadow-sm">
+                        <ul class="list-disc list-inside space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <!-- Settings Header -->
+                <div class="settings-header">
+                    <div class="settings-content">
+                        <h1 class="settings-title">Account Settings ⚙️</h1>
+                        <p class="settings-subtitle">Manage your profile, preferences, and notification settings.</p>
+                    </div>
                 </div>
-            </div>
 
             <!-- Settings Grid -->
             <div class="settings-grid">
@@ -201,17 +224,29 @@
 
                     <form method="POST" action="{{ route('profile.update') }}">
                         @csrf
-                        @method('patch')
+                        @method('PATCH')
 
                         <div class="form-group">
                             <label class="form-label" for="name">Full Name</label>
-                            <input type="text" id="name" name="name" class="form-input" value="{{ Auth::user()->name }}" required>
+                            <input type="text" id="name" name="name" class="form-input" value="{{ $user->name }}" required>
+                            @error('name')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="email">Email Address</label>
-                            <input type="email" id="email" name="email" class="form-input" value="{{ Auth::user()->email }}" required>
+                            <input type="email" id="email" name="email" class="form-input" value="{{ $user->email }}" required>
+                            @error('email')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
+
+                        @if (session('status') === 'profile-updated')
+                            <p class="text-green-600 text-sm bg-green-50 p-3 rounded-lg border border-green-200 mb-4">
+                                Profile updated successfully!
+                            </p>
+                        @endif
 
                         <button type="submit" class="btn-save">
                             <i class="bi bi-check-lg"></i> Save Changes
@@ -261,81 +296,131 @@
                     </ul>
                 </div>
 
-                <!-- Notification Settings -->
+
+
+                <!-- Participant Profile -->
                 <div class="settings-card">
                     <div class="card-header">
-                        <div class="card-icon"><i class="bi bi-bell"></i></div>
+                        <div class="card-icon"><i class="bi bi-trophy"></i></div>
                         <div>
-                            <h3 class="card-title">Notifications</h3>
-                            <p class="card-desc">Manage your preferences</p>
+                            <h3 class="card-title">Participant Profile</h3>
+                            <p class="card-desc">Complete this to apply for events</p>
+                            @if($user->hasCompleteProfile())
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-2">
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Profile Complete
+                                </span>
+                            @endif
                         </div>
                     </div>
 
-                    <div class="toggle-wrapper">
-                        <span class="toggle-label">Email Notifications</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="toggle-wrapper">
-                        <span class="toggle-label">Event Updates</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="toggle-wrapper">
-                        <span class="toggle-label">Score Alerts</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="toggle-wrapper">
-                        <span class="toggle-label">Marketing Emails</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Security Settings -->
-                <div class="settings-card">
-                    <div class="card-header">
-                        <div class="card-icon"><i class="bi bi-shield-lock"></i></div>
-                        <div>
-                            <h3 class="card-title">Security</h3>
-                            <p class="card-desc">Protect your account</p>
-                        </div>
-                    </div>
-
-                    <form>
+                    <form method="POST" action="{{ route('participant.profile.store') }}">
+                        @csrf
+                        
                         <div class="form-group">
-                            <label class="form-label" for="current_password">Current Password</label>
-                            <input type="password" id="current_password" name="current_password" class="form-input" placeholder="Enter current password">
+                            <label class="form-label" for="full_name">Full Name (Stage Name)</label>
+                            <input type="text" id="full_name" name="full_name" class="form-input" value="{{ $profile->full_name ?? '' }}" required>
+                            @error('full_name')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="form-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label" for="age">Age</label>
+                                <input type="number" id="age" name="age" class="form-input" value="{{ $profile->age ?? '' }}" min="13" max="100">
+                                @error('age')
+                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="form-label" for="gender">Gender</label>
+                                <select id="gender" name="gender" class="form-select">
+                                    <option value="">Select</option>
+                                    <option value="male" {{ ($profile->gender ?? '') == 'male' ? 'selected' : '' }}>Male</option>
+                                    <option value="female" {{ ($profile->gender ?? '') == 'female' ? 'selected' : '' }}>Female</option>
+                                    <option value="other" {{ ($profile->gender ?? '') == 'other' ? 'selected' : '' }}>Other</option>
+                                </select>
+                                @error('gender')
+                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="new_password">New Password</label>
-                            <input type="password" id="new_password" name="new_password" class="form-input" placeholder="Enter new password">
+                            <label class="form-label" for="contact_number">Contact Number</label>
+                            <input type="tel" id="contact_number" name="contact_number" class="form-input" value="{{ $profile->contact_number ?? '' }}">
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="confirm_password">Confirm New Password</label>
-                            <input type="password" id="confirm_password" name="confirm_password" class="form-input" placeholder="Confirm new password">
+                            <label class="form-label" for="address">Full Address</label>
+                            <textarea id="address" name="address" rows="2" class="form-input">{{ $profile->address ?? '' }}</textarea>
                         </div>
 
-                        <button type="submit" class="btn-save">
-                            <i class="bi bi-key"></i> Update Password
+                        <div class="form-group">
+                            <label class="form-label" for="bio">Short Bio</label>
+                            <textarea id="bio" name="bio" rows="3" class="form-input" placeholder="Tell us about yourself...">{{ $profile->bio ?? '' }}</textarea>
+                        </div>
+
+                        <div class="form-group grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label" for="height">Height (ft)</label>
+                                <input type="number" step="0.01" id="height" name="height" class="form-input" value="{{ $profile->height ?? '' }}" placeholder="5.75">
+                            </div>
+                            <div>
+                                <label class="form-label" for="weight">Weight (lbs)</label>
+                                <input type="number" step="0.01" id="weight" name="weight" class="form-input" value="{{ $profile->weight ?? '' }}" placeholder="150.5">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Measurements (Bust/Waist/Hips inches)</label>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="form-label text-xs block mb-1">Bust</label>
+                                    <input type="number" step="0.1" name="measurements[0]" class="form-input" value="{{ ($profile->measurements[0] ?? '') }}" placeholder="36">
+                                    @error('measurements.0')
+                                        <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="form-label text-xs block mb-1">Waist</label>
+                                    <input type="number" step="0.1" name="measurements[1]" class="form-input" value="{{ ($profile->measurements[1] ?? '') }}" placeholder="28">
+                                    @error('measurements.1')
+                                        <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label class="form-label text-xs block mb-1">Hips</label>
+                                    <input type="number" step="0.1" name="measurements[2]" class="form-input" value="{{ ($profile->measurements[2] ?? '') }}" placeholder="38">
+                                    @error('measurements.2')
+                                        <p class="text-red-600 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                            @error('measurements')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="photo">Photo URL</label>
+                            <input type="file" id="photo" name="photo" class="form-input" value="{{ $profile->photo ?? '' }}" placeholder="https://example.com/photo.jpg">
+                            @error('photo')
+                                <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <button type="submit" class="btn-save w-full">
+                            <i class="bi bi-check-lg"></i> {{ $user->hasCompleteProfile() ? 'Update Profile' : 'Complete Profile & Save' }}
                         </button>
                     </form>
                 </div>
+
+ 
             </div>
         </div>
     </div>
-</x-participant-layout>
+</x-app-sidebar>

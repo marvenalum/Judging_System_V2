@@ -29,4 +29,13 @@ class Submission extends Model
     {
         return $this->belongsTo(Event::class);
     }
+
+    /**
+     * Get the scores for this submission (via participant scoped to event)
+     */
+    public function scores()
+    {
+        return $this->hasMany(Score::class, 'participant_id', 'participant_id')
+                    ->where('event_id', $this->event_id);
+    }
 }

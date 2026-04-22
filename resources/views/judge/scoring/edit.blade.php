@@ -1,4 +1,7 @@
- <x-judge-layout>
+@extends('layouts.judge')
+
+
+@section( 'content')
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Edit Score') }}
@@ -113,12 +116,15 @@
                         </div>
 
                         <div class="flex items-center justify-end">
-                            <a href="{{ route('judge.review-scores') }}" class="mr-4 text-gray-600 hover:text-gray-900">
-                                Cancel
-                            </a>
-                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                Update Score
-                            </button>
+                            <div class="flex items-center space-x-3">
+                                <a href="{{ route('judge.review-scores') }}" class="text-gray-600 hover:text-gray-900">
+                                    Cancel
+                                </a>
+                                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    Update Score
+                                </button>
+                            
+                            </div>
                         </div>
                     </form>
                     @else
@@ -133,4 +139,4 @@
             </div>
         </div>
     </div>
-</x-judge-layout>
+@endsection

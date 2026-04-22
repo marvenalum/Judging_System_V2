@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\JudgeController;
 use App\Http\Controllers\CriteriaController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -40,6 +41,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Notification routes
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'mark_as_read'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'mark_all_as_read'])->name('notifications.read-all');
+    Route::get('/notifications/preferences', [NotificationController::class, 'preferences'])->name('notifications.preferences');
+    Route::patch('/notifications/preferences', [NotificationController::class, 'update_preferences'])->name('notifications.preferences.update');
 });
 
 // Admin Dashboard Routes
@@ -105,6 +113,52 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     
     // Toggle criteria status (activate/deactivate)
     Route::post('/criteria/{criterion}/toggle-status', [CriteriaController::class, 'toggleStatus'])->name('admin.criteria.toggleStatus');
+
+    // Scoring Rubrics management
+    Route::resource('scoring-rubrics', \App\Http\Controllers\Admin\ScoringRubricController::class, [
+        'names' => [
+            'index' => 'admin.scoring-rubrics.index',
+            'create' => 'admin.scoring-rubrics.create',
+            'store' => 'admin.scoring-rubrics.store',
+            'show' => 'admin.scoring-rubrics.show',
+            'edit' => 'admin.scoring-rubrics.edit',
+            'update' => 'admin.scoring-rubrics.update',
+            'destroy' => 'admin.scoring-rubrics.destroy',
+        ],
+        'parameters' => [
+            'scoring-rubrics' => 'scoringRubric',
+        ],
+    ]);
+
+    // Result Publications management
+    Route::resource('result-publications', \App\Http\Controllers\Admin\ResultPublicationController::class, [
+        'names' => [
+            'index' => 'admin.result-publications.index',
+            'create' => 'admin.result-publications.create',
+            'store' => 'admin.result-publications.store',
+            'show' => 'admin.result-publications.show',
+            'edit' => 'admin.result-publications.edit',
+            'update' => 'admin.result-publications.update',
+            'destroy' => 'admin.result-publications.destroy',
+        ],
+        'parameters' => [
+            'result-publications' => 'resultPublication',
+        ],
+    ]);
+    Route::post('/result-publications/{resultPublication}/publish', [\App\Http\Controllers\Admin\ResultPublicationController::class, 'publish'])->name('admin.result-publications.publish');
+    Route::post('/result-publications/{resultPublication}/archive', [\App\Http\Controllers\Admin\ResultPublicationController::class, 'archive'])->name('admin.result-publications.archive');
+    Route::post('/result-publications/{resultPublication}/refresh', [\App\Http\Controllers\Admin\ResultPublicationController::class, 'refreshResults'])->name('admin.result-publications.refresh');
+
+    // Bulk Import/Export management
+    Route::get('/bulk-import', [\App\Http\Controllers\Admin\BulkImportController::class, 'index'])->name('admin.bulk-import.index');
+    Route::post('/bulk-import/export', [\App\Http\Controllers\Admin\BulkImportController::class, 'export'])->name('admin.bulk-import.export');
+    Route::post('/bulk-import/import', [\App\Http\Controllers\Admin\BulkImportController::class, 'import'])->name('admin.bulk-import.import');
+    Route::get('/bulk-import/template', [\App\Http\Controllers\Admin\BulkImportController::class, 'downloadTemplate'])->name('admin.bulk-import.template');
+    Route::get('/bulk-import/categories', [\App\Http\Controllers\Admin\BulkImportController::class, 'getCategories'])->name('admin.bulk-import.categories');
+    Route::get('/bulk-import/criteria', [\App\Http\Controllers\Admin\BulkImportController::class, 'getCriteria'])->name('admin.bulk-import.criteria');
+
+    // Toggle user status (active/inactive)
+    Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('admin.users.toggleStatus');
     
     // Participant management routes
     Route::get('/participants', [AdminController::class, 'participants'])->name('admin.participants.index');
@@ -115,7 +169,24 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/participants/{submission}/edit', [AdminController::class, 'editParticipant'])->name('admin.participants.edit');
     Route::patch('/participants/{submission}', [AdminController::class, 'updateParticipant'])->name('admin.participants.update');
     Route::delete('/participants/{submission}', [AdminController::class, 'destroyParticipant'])->name('admin.participants.destroy');
+    Route::get('/participants/{submission}', [AdminController::class, 'showParticipant'])->name('admin.participants.show');
+    
+    // Judges management
+    Route::get('/judges', [UserController::class, 'judges'])->name('admin.judge.index');
+    
+    // Judge Event Assignments
+    Route::get('/judges/{judge}/assign-events', [UserController::class, 'assignEvents'])->name('admin.judges.assign-events');
+    Route::post('/judges/{judge}/assign-events', [UserController::class, 'storeAssignment'])->name('admin.judges.assign-events.store');
+    Route::get('/judges/{judge}/assignments', [UserController::class, 'assignments'])->name('admin.judges.assignments');
+    Route::delete('/judges/{judge}/assignments/{assignment}', [UserController::class, 'removeAssignment'])->name('admin.judges.assignments.destroy');
+    
+    // Judge Participant Assignments
+    Route::get('/judges/{judge}/assign-participants', [UserController::class, 'assignParticipants'])->name('admin.judges.assign-participants');
+    Route::post('/judges/{judge}/assign-participants', [UserController::class, 'storeParticipantAssignment'])->name('admin.judges.assign-participants.store');
+    Route::get('/judges/{judge}/participant-assignments', [UserController::class, 'participantAssignments'])->name('admin.judges.participant-assignments');
+    Route::delete('/judges/{judge}/participant-assignments/{assignment}', [UserController::class, 'removeParticipantAssignment'])->name('admin.judges.participant-assignments.destroy');
 });
+
 
 // Participant Dashboard Routes
 Route::prefix('participant')->middleware(['auth', 'role:participant'])->group(function () {
@@ -131,8 +202,12 @@ Route::prefix('participant')->middleware(['auth', 'role:participant'])->group(fu
     Route::put('/events/{event}', [ParticipantController::class, 'eventUpdate'])->name('participant.event.update');
     Route::delete('/events/{event}', [ParticipantController::class, 'eventDestroy'])->name('participant.event.destroy');
     
+
     // Apply to Event
     Route::post('/events/{event}/apply', [ParticipantController::class, 'eventApply'])->name('participant.event.apply');
+    
+    // Participant Profile
+    Route::post('/profile', [ParticipantController::class, 'participantProfileStore'])->name('participant.profile.store');
     
     // Categories CRUD
     Route::get('/categories', [ParticipantController::class, 'categoryIndex'])->name('participant.category.index');
@@ -154,6 +229,11 @@ Route::prefix('participant')->middleware(['auth', 'role:participant'])->group(fu
     
     // Users (View Only)
     Route::get('/users', [ParticipantController::class, 'userIndex'])->name('participant.users.index');
+    
+    // Scores viewing
+    Route::get('/scores', [ParticipantController::class, 'scoreIndex'])->name('participant.score.index');
+    
+
 });
 
 // Judge Dashboard Routes
@@ -164,12 +244,17 @@ Route::prefix('judge')->middleware(['auth', 'role:judge'])->group(function () {
     Route::get('/participants', [JudgeController::class, 'participants'])->name('judge.participants');
     Route::get('/manage-participants', [JudgeController::class, 'manageParticipants'])->name('judge.manage_participants.index');
     Route::get('/review-scores', [JudgeController::class, 'reviewScores'])->name('judge.review-scores');
-    Route::get('/scoring', [JudgeController::class, 'reviewScores'])->name('judge.scoring.index');
+    Route::get('/scoring', [JudgeController::class, 'index'])->name('judge.scoring.index');
     Route::get('/scoring/by-category', [JudgeController::class, 'scoringByCategory'])->name('judge.scoring.category');
     Route::get('/scoring/by-category/{category}/participant/{participant}', [JudgeController::class, 'scoreParticipantByCategory'])->name('judge.scoring.category.participant');
     Route::post('/scoring/by-category/{category}/participant/{participant}', [JudgeController::class, 'storeScoreByCategory'])->name('judge.scoring.category.participant.store');
     Route::get('/scoring/participants', [JudgeController::class, 'scoringParticipantsTable'])->name('judge.scoring.participants');
     Route::get('/scores/by-category', [JudgeController::class, 'scoresByCategory'])->name('judge.scores.by-category');
+    Route::post('/scores/participant/{participant}', [JudgeController::class, 'saveParticipantScores'])->name('judge.scores.participant.save');
+    
+    // New routes for judge.scoring.score-participant (matches blade template)
+    Route::get('/scoring/score-participant/{category}/{participant}', [JudgeController::class, 'scoreParticipantByCategory'])->name('judge.scoring.score-participant');
+    Route::post('/scoring/score-participant/{category}/{participant}', [JudgeController::class, 'storeScoreByCategory'])->name('judge.scoring.score-participant.store');
     
     // Bulk scoring routes
     Route::get('/scoring/bulk/{category}', [JudgeController::class, 'bulkScoreCategory'])->name('judge.scoring.bulk');
@@ -177,6 +262,7 @@ Route::prefix('judge')->middleware(['auth', 'role:judge'])->group(function () {
     
     Route::get('/scoring/edit/{scoreId}', [JudgeController::class, 'scoringEdit'])->name('judge.scoring.edit');
     Route::put('/scoring/update/{scoreId}', [JudgeController::class, 'scoringUpdate'])->name('judge.scoring.update');
+    Route::delete('/scoring/{score}', [JudgeController::class, 'destroyScore'])->name('judge.scoring.destroy');
     Route::get('/profile', [JudgeController::class, 'profile'])->name('judge.profile');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('judge.profile.edit');
     Route::resource('events', AdminController::class, [
@@ -241,4 +327,8 @@ Route::prefix('judge')->middleware(['auth', 'role:judge'])->group(function () {
     ]);
 });
 
+// Public results sharing
+Route::get('/results/{code}', [\App\Http\Controllers\Public\ResultController::class, 'show'])->name('public.results.show');
+
 require __DIR__.'/auth.php';
+
